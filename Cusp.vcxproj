@@ -157,9 +157,6 @@
     <ClCompile Include="UIA.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Approach01.h" />
-    <ClInclude Include="Approach02.h" />
-    <ClInclude Include="Approach03.h" />
     <ClInclude Include="Approach04.h" />
     <ClInclude Include="UIA.h" />
   </ItemGroup>
