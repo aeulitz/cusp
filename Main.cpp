@@ -1,16 +1,12 @@
-#include "Approach04.h"
+#include "FooPattern.h"
 
 #include <iostream>
 
-void Test()
-{
-}
-
 int main()
 {
-	// Test();
+	App::FooPattern::RegisterMethods();
 
-	Approach04::Main();
+	std::cout << "method count: " << RegisterMethodCount<App::FooPattern, CustomPatternBase<App::FooPattern>::MethodRegistrar>::Get() << std::endl;
 
 	std::cout << "end\n";
 }

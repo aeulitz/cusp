@@ -157,7 +157,8 @@
     <ClCompile Include="UIA.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Approach04.h" />
+    <ClInclude Include="FooPattern.h" />
+    <ClInclude Include="CustomPatternBase.h" />
     <ClInclude Include="UIA.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
