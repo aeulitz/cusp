@@ -8,6 +8,15 @@
 //     error C3615: constexpr function '...' cannot result in a constant expression
 //   Is that (one of) the reasons Vladimir uses the visitor pattern?
 
+
+#define CUSTOM_PATTERN_METHOD(N, GUID)                                                             \
+	template<class TVisitor>                                              \
+	static constexpr void RegisterMethod(std::integral_constant<int, N> n)                         \
+	{                                                                                              \
+		TVisitor::Visit(n, GUID);                                                                  \
+		if constexpr (n > 0) RegisterMethod<TVisitor>(std::integral_constant<int, n - 1>{});       \
+	}                                                                                              \
+
 template<class TPattern, class TVisitor>
 struct RegisterMethodCount
 {
@@ -33,16 +42,17 @@ struct CustomPatternBase
 {
 	struct MethodRegistrar
 	{
-		static void Visit(int n)
+		static void Visit(int n, const char* guid)
 		{
 			std::cout << "register " << n << std::endl;
 		}
 	};
 
+	template<class TVisitor = MethodRegistrar>
 	static constexpr void RegisterMethods()
 	{
 		std::integral_constant<int, RegisterMethodCount<TDerived, MethodRegistrar>::Get() - 1> n;
 
-		TDerived::template RegisterMethod<MethodRegistrar>(n);
+		TDerived::template RegisterMethod<TVisitor>(n);
 	}
 };

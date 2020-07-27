@@ -8,12 +8,13 @@ namespace App
 {
 	struct FooPattern : public CustomPatternBase<FooPattern>
 	{
-		template<class TVisitor>
-		static constexpr void RegisterMethod(std::integral_constant<int, 0> n)
-		{
-			TVisitor::Visit(n);
-			if constexpr (n > 0) RegisterMethod<TVisitor>(std::integral_constant<int, n - 1>{});
-		}
+		//template<class TVisitor>
+		//static constexpr void RegisterMethod(std::integral_constant<int, 0> n)
+		//{
+		//	TVisitor::Visit(n);
+		//	if constexpr (n > 0) RegisterMethod<TVisitor>(std::integral_constant<int, n - 1>{});
+		//}
+		CUSTOM_PATTERN_METHOD(0, "abc123")
 		const char* GetFoo()
 		{
 			return m_foo.c_str();
@@ -23,7 +24,7 @@ namespace App
 		// static constexpr void RegisterMethod(std::integral_constant<int, RegisterMethodCount<FooPattern, TVisitor>::Get()> n)
 		static constexpr void RegisterMethod(std::integral_constant<int, 1> n)
 		{
-			TVisitor::Visit(n);
+			TVisitor::Visit(n, "abc123");
 			if constexpr (n > 0) RegisterMethod<TVisitor>(std::integral_constant<int, n - 1>{});
 		}
 		void SetFoo(const char* val)
@@ -31,12 +32,13 @@ namespace App
 			m_foo = val;
 		}
 
-		template<class TVisitor>
-		static constexpr void RegisterMethod(std::integral_constant<int, 2> n)
-		{
-			TVisitor::Visit(n);
-			if constexpr (n > 0) RegisterMethod<TVisitor>(std::integral_constant<int, n - 1>{});
-		}
+		//template<class TVisitor>
+		//static constexpr void RegisterMethod(std::integral_constant<int, 2> n)
+		//{
+		//	TVisitor::Visit(n);
+		//	if constexpr (n > 0) RegisterMethod<TVisitor>(std::integral_constant<int, n - 1>{});
+		//}
+		CUSTOM_PATTERN_METHOD(2, "abc123")
 		void AppendFoo(const char* val)
 		{
 			m_foo += val;
@@ -45,7 +47,7 @@ namespace App
 		template<class TVisitor>
 		static constexpr void RegisterMethod(std::integral_constant<int, 3> n)
 		{
-			TVisitor::Visit(n);
+			TVisitor::Visit(n, "abc123");
 			if constexpr (n > 0) RegisterMethod<TVisitor>(std::integral_constant<int, n - 1>{});
 		}
 		void ClearFoo()
