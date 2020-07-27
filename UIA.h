@@ -30,5 +30,4 @@ namespace Microsoft::UIA
 		GUID guid,
 		RemoteOperationContext& context,
 		const std::vector<OperandId>& operands);
-
 }
