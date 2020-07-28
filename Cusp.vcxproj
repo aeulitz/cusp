@@ -172,6 +172,7 @@
   <ItemGroup>
     <ClInclude Include="FooPattern.h" />
     <ClInclude Include="CustomPatternBase.h" />
+    <ClInclude Include="GuidUtils.h" />
     <ClInclude Include="UIA.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

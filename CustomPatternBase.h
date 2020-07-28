@@ -1,5 +1,7 @@
 #pragma once
 
+#include "GuidUtils.h"
+
 #include <iostream>
 #include <type_traits>
 
@@ -8,12 +10,11 @@
 //     error C3615: constexpr function '...' cannot result in a constant expression
 //   Is that (one of) the reasons Vladimir uses the visitor pattern?
 
-
 #define CUSTOM_PATTERN_METHOD(N, GUID)                                                             \
 	template<class TVisitor>                                              \
 	static constexpr void RegisterMethod(std::integral_constant<int, N> n)                         \
 	{                                                                                              \
-		TVisitor::Visit(n, GUID);                                                                  \
+		TVisitor::Visit(n, Guid::StringToGuid(GUID));                                              \
 		if constexpr (n > 0) RegisterMethod<TVisitor>(std::integral_constant<int, n - 1>{});       \
 	}                                                                                              \
 
@@ -42,7 +43,7 @@ struct CustomPatternBase
 {
 	struct MethodRegistrar
 	{
-		static void Visit(int n, const char* guid)
+		static void Visit(int n, const GUID& guid)
 		{
 			std::cout << "register " << n << std::endl;
 		}
