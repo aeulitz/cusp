@@ -54,7 +54,7 @@ struct RegisterMethodCount
 };
 
 template<class TDerived>
-struct CustomPatternBase : wrl::Implements<IInspectable>
+struct CustomPatternBase : public wrl::RuntimeClass<IInspectable>
 {
 	struct MethodRegistrar
 	{

@@ -46,6 +46,7 @@ namespace App
 		}
 		const char* GetFoo()
 		{
+			if (OnGetFoo) OnGetFoo();
 			return m_foo.c_str();
 		}
 
@@ -66,6 +67,8 @@ namespace App
 		{
 			m_foo.clear();
 		}
+
+		std::function<void()> OnGetFoo = nullptr;
 
 	private:
 		std::string m_foo;

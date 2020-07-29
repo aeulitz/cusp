@@ -50,20 +50,20 @@ namespace UnitTest1
 		{
 			App::FooPattern::RegisterMethods<TestRegistrar>();
 
+			auto fooPatternInstance = wrl::Make<App::FooPattern>();
+			int getFooCallCount = 0;
+			fooPatternInstance->OnGetFoo = [&getFooCallCount]() {++getFooCallCount; };
+
 			GUID getFooGuid{ 0xe6b31052, 0x4a7e, 0x4dad, {0xb3, 0x41, 0x85, 0x56, 0x09, 0xf4, 0x22, 0x32} };
 
 			Microsoft::UIA::RemoteOperationContext context;
-			auto fooPatternInstance = wrl::Make<App::FooPattern>();
 			context.SetOperand(0, fooPatternInstance);
 
 			Microsoft::UIA::CallRemoteOperationExtension(getFooGuid, context, { 0 });
 
-
-
+			Assert::AreEqual(1, getFooCallCount);
 
 			App::FooPattern::UnregisterMethods();
 		}
-
-		// TODO: create way to unregister patterns and test it
 	};
 }

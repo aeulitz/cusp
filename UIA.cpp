@@ -46,7 +46,7 @@ namespace Microsoft::UIA
 	}
 
 	void CallRemoteOperationExtension(
-		GUID guid,
+		const GUID& guid,
 		RemoteOperationContext& context,
 		const std::vector<OperandId>& operands)
 	{
