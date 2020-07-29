@@ -25,9 +25,12 @@ namespace Microsoft::UIA
 
 	using Callback = std::function<void(RemoteOperationContext& context, const std::vector<OperandId>&)>;
 
-	void AddRemoteOperationExtension(GUID guid, int n, Callback&& callback);
+	void AddRemoteOperationExtension(const GUID& guid, int n, Callback&& callback);
 	void CallRemoteOperationExtension(
 		GUID guid,
 		RemoteOperationContext& context,
 		const std::vector<OperandId>& operands);
+	void RemoveRemoteOperationExtension(const GUID& guid);
+
+	size_t TestOnly_RemoteOperationCount();
 }

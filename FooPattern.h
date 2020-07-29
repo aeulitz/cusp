@@ -1,17 +1,48 @@
 #pragma once
 
 #include "CustomPatternBase.h"
+#include "UIA.h"
 
 namespace App
 {
+	//[uuid(AFDB9683 - F18A - 4B85 - 90D1 - B6158DAFA46C)]
+	//__declspec(uuid("c29e6e8c-47e5-4405-95a8-706d4d0d95b3"))
 	struct FooPattern : public CustomPatternBase<FooPattern>
 	{
-		//CUSTOM_PATTERN_METHOD(0, "e6b31052-4a7e-4dad-b341-855609f42232")
+		//CUSTOM_PATTERN_METHOD(0, GetFoo, "e6b31052-4a7e-4dad-b341-855609f42232")
 		template<class TVisitor>
 		static constexpr void RegisterMethod(std::integral_constant<int, 0> n)
 		{
+			// Can we bind the pattern type to the visitor type to make it available here without
+			// having to specify it as a macro parameter (again), resulting in a usage like
+			//     TVisitor::PatternType
+			// ?
+			// Or could it be a direct type parameter of the RegisterMethod?
+
 			TVisitor::Visit(n, Guid::StringToGuid("e6b31052-4a7e-4dad-b341-855609f42232"));
+
+			Microsoft::UIA::AddRemoteOperationExtension(
+				Guid::StringToGuid("e6b31052-4a7e-4dad-b341-855609f42232"),
+				1, // not sure what it is/how it is used
+				[](Microsoft::UIA::RemoteOperationContext& context, const std::vector<Microsoft::UIA::OperandId>& operandIds)
+				{
+					auto _this = static_cast<FooPattern*>(context.GetOperand(operandIds[0]).Get());
+					auto methodPointer = &FooPattern::GetFoo;
+					auto retVal = (_this->*methodPointer)();
+				});
+
+
+
+
 			if constexpr (n > 0) RegisterMethod<TVisitor>(std::integral_constant<int, n - 1>{});
+		}
+		template<class TVisitor>
+		static constexpr void UnregisterMethod(std::integral_constant<int, 0> n)
+		{
+			Microsoft::UIA::RemoveRemoteOperationExtension(Guid::StringToGuid("e6b31052-4a7e-4dad-b341-855609f42232"));
+
+			if constexpr (n > 0) UnregisterMethod<TVisitor>(std::integral_constant<int, n - 1>{});
+
 		}
 		const char* GetFoo()
 		{

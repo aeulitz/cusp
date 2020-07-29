@@ -37,8 +37,7 @@ namespace Microsoft::UIA
 
 	static std::unordered_map<GUID, Callback> callbackRegistry;
 
-
-	void AddRemoteOperationExtension(GUID guid, int n, Callback&& callback)
+	void AddRemoteOperationExtension(const GUID& guid, int n, Callback&& callback)
 	{
 		// REVIEW: What is 'n'? Do we need to store it?
 
@@ -52,5 +51,16 @@ namespace Microsoft::UIA
 		const std::vector<OperandId>& operands)
 	{
 		callbackRegistry[guid](context, operands);
+	}
+
+	void RemoveRemoteOperationExtension(const GUID& guid)
+	{
+		size_t count = callbackRegistry.erase(guid);
+		assert(count == 1);
+	}
+
+	size_t TestOnly_RemoteOperationCount()
+	{
+		return callbackRegistry.size();
 	}
 }
