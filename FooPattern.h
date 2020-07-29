@@ -13,12 +13,6 @@ namespace App
 		template<class TVisitor>
 		static constexpr void RegisterMethod(std::integral_constant<int, 0> n)
 		{
-			// Can we bind the pattern type to the visitor type to make it available here without
-			// having to specify it as a macro parameter (again), resulting in a usage like
-			//     TVisitor::PatternType
-			// ?
-			// Or could it be a direct type parameter of the RegisterMethod?
-
 			TVisitor::Visit(n, Guid::StringToGuid("e6b31052-4a7e-4dad-b341-855609f42232"));
 
 			Microsoft::UIA::AddRemoteOperationExtension(
@@ -26,13 +20,9 @@ namespace App
 				1, // not sure what it is/how it is used
 				[](Microsoft::UIA::RemoteOperationContext& context, const std::vector<Microsoft::UIA::OperandId>& operandIds)
 				{
-					auto _this = static_cast<FooPattern*>(context.GetOperand(operandIds[0]).Get());
 					auto methodPointer = &FooPattern::GetFoo;
-					auto retVal = (_this->*methodPointer)();
+					MethodInvoker<FooPattern>::Invoke(methodPointer, context, operandIds);
 				});
-
-
-
 
 			if constexpr (n > 0) RegisterMethod<TVisitor>(std::integral_constant<int, n - 1>{});
 		}
@@ -42,7 +32,6 @@ namespace App
 			Microsoft::UIA::RemoveRemoteOperationExtension(Guid::StringToGuid("e6b31052-4a7e-4dad-b341-855609f42232"));
 
 			if constexpr (n > 0) UnregisterMethod<TVisitor>(std::integral_constant<int, n - 1>{});
-
 		}
 		const char* GetFoo()
 		{
@@ -50,10 +39,36 @@ namespace App
 			return m_foo.c_str();
 		}
 
-		CUSTOM_PATTERN_METHOD(1, "4426d571-240c-47bc-8d5a-51f2974b4beb")
+		// CUSTOM_PATTERN_METHOD(1, SetFoo, "4426d571-240c-47bc-8d5a-51f2974b4beb")
+		template<class TVisitor>
+		static constexpr void RegisterMethod(std::integral_constant<int, 1> n)
+		{
+			TVisitor::Visit(n, Guid::StringToGuid("4426d571-240c-47bc-8d5a-51f2974b4beb"));
+
+			Microsoft::UIA::AddRemoteOperationExtension(
+				Guid::StringToGuid("4426d571-240c-47bc-8d5a-51f2974b4beb"),
+				1, // not sure what it is/how it is used
+				[](Microsoft::UIA::RemoteOperationContext& context, const std::vector<Microsoft::UIA::OperandId>& operandIds)
+				{
+					auto methodPointer = &FooPattern::SetFoo;
+					MethodInvoker<FooPattern>::Invoke(methodPointer, context, operandIds);
+				});
+
+			if constexpr (n > 0) RegisterMethod<TVisitor>(std::integral_constant<int, n - 1>{});
+		}
+		template<class TVisitor>
+		static constexpr void UnregisterMethod(std::integral_constant<int, 1> n)
+		{
+			Microsoft::UIA::RemoveRemoteOperationExtension(Guid::StringToGuid("4426d571-240c-47bc-8d5a-51f2974b4beb"));
+
+			if constexpr (n > 0) UnregisterMethod<TVisitor>(std::integral_constant<int, n - 1>{});
+		}
 		void SetFoo(const char* val)
 		{
-			m_foo = val;
+			if (OnSetFoo) OnSetFoo();
+
+			// deactivated until we figure out unboxing story
+			// m_foo = val;
 		}
 
 		CUSTOM_PATTERN_METHOD(2, "c583a435-e0c1-4ba9-be2d-6b8d714c7918")
@@ -68,7 +83,14 @@ namespace App
 			m_foo.clear();
 		}
 
+		//
+		// for testing
+		//
+
 		std::function<void()> OnGetFoo = nullptr;
+
+		// TODO: add param
+		std::function<void()> OnSetFoo = nullptr;
 
 	private:
 		std::string m_foo;

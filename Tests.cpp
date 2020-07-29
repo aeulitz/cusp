@@ -38,7 +38,7 @@ namespace UnitTest1
 			Assert::AreEqual(GUID{ 0xe6b31052, 0x4a7e, 0x4dad, {0xb3, 0x41, 0x85, 0x56, 0x09, 0xf4, 0x22, 0x32} }, guids[3]);
 
 			// temporary, while there's a hardcoded macro expansion
-			Assert::AreEqual(1ull, Microsoft::UIA::TestOnly_RemoteOperationCount());
+			Assert::AreEqual(2ull, Microsoft::UIA::TestOnly_RemoteOperationCount());
 
 			App::FooPattern::UnregisterMethods();
 
@@ -54,8 +54,6 @@ namespace UnitTest1
 			int getFooCallCount = 0;
 			fooPatternInstance->OnGetFoo = [&getFooCallCount]() {++getFooCallCount; };
 
-			GUID getFooGuid{ 0xe6b31052, 0x4a7e, 0x4dad, {0xb3, 0x41, 0x85, 0x56, 0x09, 0xf4, 0x22, 0x32} };
-
 			Microsoft::UIA::RemoteOperationContext context;
 			context.SetOperand(0, fooPatternInstance);
 
@@ -65,5 +63,27 @@ namespace UnitTest1
 
 			App::FooPattern::UnregisterMethods();
 		}
+
+		TEST_METHOD(InvokeSetFoo)
+		{
+			App::FooPattern::RegisterMethods<TestRegistrar>();
+
+			auto fooPatternInstance = wrl::Make<App::FooPattern>();
+			int setFooCallCount = 0;
+			fooPatternInstance->OnSetFoo = [&setFooCallCount]() {++setFooCallCount; };
+
+			Microsoft::UIA::RemoteOperationContext context;
+			context.SetOperand(0, fooPatternInstance);
+
+			Microsoft::UIA::CallRemoteOperationExtension(setFooGuid, context, { 0, 1 });
+
+			Assert::AreEqual(1, setFooCallCount);
+
+			App::FooPattern::UnregisterMethods();
+		}
+
+	private:
+		static inline GUID getFooGuid{ 0xe6b31052, 0x4a7e, 0x4dad, {0xb3, 0x41, 0x85, 0x56, 0x09, 0xf4, 0x22, 0x32} };
+		static inline GUID setFooGuid{ 0x4426d571, 0x240c, 0x47bc, {0x8d, 0x5a, 0x51, 0xf2, 0x97, 0x4b, 0x4b, 0xeb} };
 	};
 }

@@ -12,12 +12,6 @@
 //   Is that (one of) the reasons Vladimir uses the visitor pattern?
 // - interesting article: https://www.drdobbs.com/cpp/extracting-function-parameter-and-return/240000586
 
-
-// Ideas:
-// - Instead of using std::integral_const<> parameter type to differentiate the 'RegisterMethod'
-//   overloads, we could use a concatenation of 'RegisterMethod' and the method name (using the
-//   macro string concat operator), resulting on 'RegisterSetFoo', RegisterGetFoo' etc.
-
 namespace wrl = Microsoft::WRL;
 
 #define CUSTOM_PATTERN_METHOD(N, GUID)                                                             \
@@ -50,6 +44,29 @@ struct RegisterMethodCount
 			return Get<N + 1>();
 		else
 			return N + 1;
+	}
+};
+
+template<class TPattern>
+struct MethodInvoker
+{
+	template<class TReturn /*, class TArg*/>
+	static TReturn Invoke(TReturn(TPattern::* methodPointer)(/*TArg*/), const Microsoft::UIA::RemoteOperationContext& context, const std::vector<Microsoft::UIA::OperandId>& operandIds)
+	{
+		auto _this = static_cast<TPattern*>(context.GetOperand(operandIds[0]).Get());
+		// stick return value into context rather than returning it?
+		return (_this->*methodPointer)();
+
+	}
+
+	template<class TReturn, class TArg0>
+	static TReturn Invoke(TReturn(TPattern::* methodPointer)(TArg0), const Microsoft::UIA::RemoteOperationContext& context, const std::vector<Microsoft::UIA::OperandId>& operandIds)
+	{
+		auto _this = static_cast<TPattern*>(context.GetOperand(operandIds[0]).Get());
+		// stick return value into context rather than returning it?
+		// TODO: replace reinterpret_cast with unboxing operation
+		return (_this->*methodPointer)(reinterpret_cast<TArg0>(context.GetOperand(operandIds[1]).Get()));
+
 	}
 };
 
