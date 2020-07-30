@@ -18,8 +18,8 @@ struct std::hash<GUID>
 		return
 			guid.Data1 ^
 			((guid.Data2 << 16) | guid.Data3) ^
-			reinterpret_cast<uint32_t>(guid.Data4) ^
-			reinterpret_cast<uint32_t>(guid.Data4 + 4);
+			*reinterpret_cast<uint32_t*>(guid.Data4) ^
+			*reinterpret_cast<uint32_t*>(guid.Data4 + 4);
 	}
 };
 
