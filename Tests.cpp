@@ -2,6 +2,8 @@
 #include "CppUnitTest.h"
 #include <functional>
 
+#include <winrt/Windows.Foundation.h>
+
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 namespace wrl = Microsoft::WRL;
 
@@ -66,6 +68,8 @@ namespace UnitTest1
 
 		TEST_METHOD(InvokeSetFoo)
 		{
+			auto foo = winrt::box_value(L"string cheese");
+
 			App::FooPattern::RegisterMethods<TestRegistrar>();
 
 			auto fooPatternInstance = wrl::Make<App::FooPattern>();
@@ -74,6 +78,7 @@ namespace UnitTest1
 
 			Microsoft::UIA::RemoteOperationContext context;
 			context.SetOperand(0, fooPatternInstance);
+			context.SetOperand(1, foo.as<::IInspectable>().get());
 
 			Microsoft::UIA::CallRemoteOperationExtension(setFooGuid, context, { 0, 1 });
 

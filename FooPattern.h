@@ -33,7 +33,7 @@ namespace App
 
 			if constexpr (n > 0) UnregisterMethod<TVisitor>(std::integral_constant<int, n - 1>{});
 		}
-		const char* GetFoo()
+		const wchar_t* GetFoo()
 		{
 			if (OnGetFoo) OnGetFoo();
 			return m_foo.c_str();
@@ -63,16 +63,14 @@ namespace App
 
 			if constexpr (n > 0) UnregisterMethod<TVisitor>(std::integral_constant<int, n - 1>{});
 		}
-		void SetFoo(const char* val)
+		void SetFoo(const std::wstring& val)
 		{
 			if (OnSetFoo) OnSetFoo();
-
-			// deactivated until we figure out unboxing story
-			// m_foo = val;
+			m_foo = val;
 		}
 
 		CUSTOM_PATTERN_METHOD(2, "c583a435-e0c1-4ba9-be2d-6b8d714c7918")
-		void AppendFoo(const char* val)
+		void AppendFoo(const std::wstring& val)
 		{
 			m_foo += val;
 		}
@@ -93,7 +91,7 @@ namespace App
 		std::function<void()> OnSetFoo = nullptr;
 
 	private:
-		std::string m_foo;
+		std::wstring m_foo;
 	};
 
 #if 0

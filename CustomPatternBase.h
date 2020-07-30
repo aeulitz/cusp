@@ -3,6 +3,8 @@
 #include "GuidUtils.h"
 #include "UIA.h"
 
+#include <winrt/Windows.Foundation.h>
+
 #include <iostream>
 #include <type_traits>
 
@@ -47,6 +49,32 @@ struct RegisterMethodCount
 	}
 };
 
+template<class TTarget>
+TTarget Unbox(const wrl::ComPtr<IInspectable>& val)
+{
+}
+
+template <>
+std::wstring Unbox<std::wstring>(const wrl::ComPtr<IInspectable>& val)
+{
+	wrl::ComPtr val1 = val;
+
+	winrt::hstring s = winrt::unbox_value<winrt::hstring>(winrt::Windows::Foundation::IInspectable{ val1.Detach(), winrt::take_ownership_from_abi });
+	return s.c_str();
+}
+
+template<class T>
+struct UnboxMapping
+{
+};
+
+template<>
+struct UnboxMapping<const std::wstring&>
+{
+	// REVIEW: there's probably a better way to drop 'const &' from a type
+	using TargetType = std::wstring;
+};
+
 template<class TPattern>
 struct MethodInvoker
 {
@@ -64,9 +92,7 @@ struct MethodInvoker
 	{
 		auto _this = static_cast<TPattern*>(context.GetOperand(operandIds[0]).Get());
 		// stick return value into context rather than returning it?
-		// TODO: replace reinterpret_cast with unboxing operation
-		return (_this->*methodPointer)(reinterpret_cast<TArg0>(context.GetOperand(operandIds[1]).Get()));
-
+		return (_this->*methodPointer)(Unbox<UnboxMapping<TArg0>::TargetType>(context.GetOperand(operandIds[1]).Get()));
 	}
 };
 
