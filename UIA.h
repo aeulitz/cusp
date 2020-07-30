@@ -1,12 +1,12 @@
 #pragma once
 
 #include <guiddef.h>
-#include <wrl.h>
+#include <winrt/Windows.Foundation.h>
 
 #include <functional>
 #include <vector>
 
-namespace wrl = Microsoft::WRL;
+using namespace winrt::Windows::Foundation;
 
 namespace Microsoft::UIA
 {
@@ -15,12 +15,12 @@ namespace Microsoft::UIA
 	class RemoteOperationContext
 	{
 	public:
-		wrl::ComPtr<IInspectable> GetOperand(OperandId operandId) const;
-		void SetOperand(OperandId operandId, wrl::ComPtr<IInspectable> operandValue);
+		IInspectable GetOperand(OperandId operandId) const;
+		void SetOperand(OperandId operandId, IInspectable operandValue);
 
 	private:
 		const size_t MaxOperands = 10;
-		std::vector<wrl::ComPtr<IInspectable>> m_operands{ MaxOperands };
+		std::vector<IInspectable> m_operands{ MaxOperands };
 	};
 
 	using Callback = std::function<void(RemoteOperationContext& context, const std::vector<OperandId>&)>;

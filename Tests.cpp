@@ -1,11 +1,11 @@
 #include "FooPattern.h"
-#include "CppUnitTest.h"
-#include <functional>
 
+#include <CppUnitTest.h>
 #include <winrt/Windows.Foundation.h>
 
+#include <functional>
+
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
-namespace wrl = Microsoft::WRL;
 
 struct TestRegistrar
 {
@@ -52,9 +52,9 @@ namespace UnitTest1
 		{
 			App::FooPattern::RegisterMethods<TestRegistrar>();
 
-			auto fooPatternInstance = wrl::Make<App::FooPattern>();
+			auto fooPatternInstance = winrt::make<App::FooPattern>();
 			int getFooCallCount = 0;
-			fooPatternInstance->OnGetFoo = [&getFooCallCount]() {++getFooCallCount; };
+			fooPatternInstance.as<App::FooPattern>()->OnGetFoo = [&getFooCallCount]() { ++getFooCallCount; };
 
 			Microsoft::UIA::RemoteOperationContext context;
 			context.SetOperand(0, fooPatternInstance);
@@ -72,13 +72,14 @@ namespace UnitTest1
 
 			App::FooPattern::RegisterMethods<TestRegistrar>();
 
-			auto fooPatternInstance = wrl::Make<App::FooPattern>();
+			auto fooPatternInstance = winrt::make<App::FooPattern>();
 			int setFooCallCount = 0;
-			fooPatternInstance->OnSetFoo = [&setFooCallCount]() {++setFooCallCount; };
+
+			fooPatternInstance.as<App::FooPattern>()->OnSetFoo = [&setFooCallCount]() {++setFooCallCount; };
 
 			Microsoft::UIA::RemoteOperationContext context;
 			context.SetOperand(0, fooPatternInstance);
-			context.SetOperand(1, foo.as<::IInspectable>().get());
+			context.SetOperand(1, foo);
 
 			Microsoft::UIA::CallRemoteOperationExtension(setFooGuid, context, { 0, 1 });
 

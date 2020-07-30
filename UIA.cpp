@@ -25,12 +25,12 @@ struct std::hash<GUID>
 
 namespace Microsoft::UIA
 {
-	wrl::ComPtr<IInspectable> RemoteOperationContext::GetOperand(OperandId operandId) const
+	IInspectable RemoteOperationContext::GetOperand(OperandId operandId) const
 	{
 		return m_operands[operandId];
 	}
 
-	void RemoteOperationContext::SetOperand(OperandId operandId, wrl::ComPtr<IInspectable> operandValue)
+	void RemoteOperationContext::SetOperand(OperandId operandId, IInspectable operandValue)
 	{
 		m_operands[operandId] = operandValue;
 	}

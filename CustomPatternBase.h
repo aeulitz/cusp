@@ -14,7 +14,7 @@
 //   Is that (one of) the reasons Vladimir uses the visitor pattern?
 // - interesting article: https://www.drdobbs.com/cpp/extracting-function-parameter-and-return/240000586
 
-namespace wrl = Microsoft::WRL;
+using namespace winrt::Windows::Foundation;
 
 #define CUSTOM_PATTERN_METHOD(N, GUID)                                                             \
 	template<class TVisitor>                                                                       \
@@ -50,16 +50,14 @@ struct RegisterMethodCount
 };
 
 template<class TTarget>
-TTarget Unbox(const wrl::ComPtr<IInspectable>& val)
+TTarget Unbox(const IInspectable& val)
 {
 }
 
 template <>
-std::wstring Unbox<std::wstring>(const wrl::ComPtr<IInspectable>& val)
+std::wstring Unbox<std::wstring>(const IInspectable& val)
 {
-	wrl::ComPtr val1 = val;
-
-	winrt::hstring s = winrt::unbox_value<winrt::hstring>(winrt::Windows::Foundation::IInspectable{ val1.Detach(), winrt::take_ownership_from_abi });
+	winrt::hstring s = winrt::unbox_value<winrt::hstring>(val);
 	return s.c_str();
 }
 
@@ -78,10 +76,10 @@ struct UnboxMapping<const std::wstring&>
 template<class TPattern>
 struct MethodInvoker
 {
-	template<class TReturn /*, class TArg*/>
-	static TReturn Invoke(TReturn(TPattern::* methodPointer)(/*TArg*/), const Microsoft::UIA::RemoteOperationContext& context, const std::vector<Microsoft::UIA::OperandId>& operandIds)
+	template<class TReturn>
+	static TReturn Invoke(TReturn(TPattern::* methodPointer)(), const Microsoft::UIA::RemoteOperationContext& context, const std::vector<Microsoft::UIA::OperandId>& operandIds)
 	{
-		auto _this = static_cast<TPattern*>(context.GetOperand(operandIds[0]).Get());
+		TPattern* _this = context.GetOperand(operandIds[0]).as<TPattern>().get();
 		// stick return value into context rather than returning it?
 		return (_this->*methodPointer)();
 
@@ -90,14 +88,14 @@ struct MethodInvoker
 	template<class TReturn, class TArg0>
 	static TReturn Invoke(TReturn(TPattern::* methodPointer)(TArg0), const Microsoft::UIA::RemoteOperationContext& context, const std::vector<Microsoft::UIA::OperandId>& operandIds)
 	{
-		auto _this = static_cast<TPattern*>(context.GetOperand(operandIds[0]).Get());
+		TPattern* _this = context.GetOperand(operandIds[0]).as<TPattern>().get();
 		// stick return value into context rather than returning it?
-		return (_this->*methodPointer)(Unbox<UnboxMapping<TArg0>::TargetType>(context.GetOperand(operandIds[1]).Get()));
+		return (_this->*methodPointer)(Unbox<UnboxMapping<TArg0>::TargetType>(context.GetOperand(operandIds[1])));
 	}
 };
 
 template<class TDerived>
-struct CustomPatternBase : public wrl::RuntimeClass<IInspectable>
+struct CustomPatternBase : public winrt::implements<TDerived, IInspectable>
 {
 	struct MethodRegistrar
 	{
@@ -108,9 +106,7 @@ struct CustomPatternBase : public wrl::RuntimeClass<IInspectable>
 				1, // not sure what it is/how it is used
 				[](Microsoft::UIA::RemoteOperationContext& context, const std::vector<Microsoft::UIA::OperandId>& operandIds)
 				{
-					wrl::ComPtr<TDerived> _this;
-					context.GetOperand(operandIds[0]).As<TDerived>(&_this);
-
+					auto _this = context.GetOperand(operandIds[0]).as<TDerived>();
 				});
 		}
 	};
