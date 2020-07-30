@@ -10,28 +10,17 @@ namespace App
 	struct FooPattern : public CustomPatternBase<FooPattern>
 	{
 		//CUSTOM_PATTERN_METHOD(0, GetFoo, "e6b31052-4a7e-4dad-b341-855609f42232")
-		template<class TVisitor>
+		template<class TPattern, class TRegistrar>
 		static constexpr void RegisterMethod(std::integral_constant<int, 0> n)
 		{
-			TVisitor::Visit(n, Guid::StringToGuid("e6b31052-4a7e-4dad-b341-855609f42232"));
-
-			Microsoft::UIA::AddRemoteOperationExtension(
-				Guid::StringToGuid("e6b31052-4a7e-4dad-b341-855609f42232"),
-				1, // not sure what it is/how it is used
-				[](Microsoft::UIA::RemoteOperationContext& context, const std::vector<Microsoft::UIA::OperandId>& operandIds)
-				{
-					auto methodPointer = &FooPattern::GetFoo;
-					MethodInvoker<FooPattern>::Invoke(methodPointer, context, operandIds);
-				});
-
-			if constexpr (n > 0) RegisterMethod<TVisitor>(std::integral_constant<int, n - 1>{});
+			TRegistrar::Register(Guid::StringToGuid("e6b31052-4a7e-4dad-b341-855609f42232"), &TPattern::GetFoo);
+			if constexpr (n > 0) RegisterMethod<TPattern, TRegistrar>(std::integral_constant<int, n - 1>{});
 		}
-		template<class TVisitor>
+		template<class TRegistrar>
 		static constexpr void UnregisterMethod(std::integral_constant<int, 0> n)
 		{
-			Microsoft::UIA::RemoveRemoteOperationExtension(Guid::StringToGuid("e6b31052-4a7e-4dad-b341-855609f42232"));
-
-			if constexpr (n > 0) UnregisterMethod<TVisitor>(std::integral_constant<int, n - 1>{});
+			TRegistrar::Unregister(Guid::StringToGuid("e6b31052-4a7e-4dad-b341-855609f42232"));
+			if constexpr (n > 0) UnregisterMethod<TRegistrar>(std::integral_constant<int, n - 1>{});
 		}
 		const wchar_t* GetFoo()
 		{
@@ -40,28 +29,17 @@ namespace App
 		}
 
 		// CUSTOM_PATTERN_METHOD(1, SetFoo, "4426d571-240c-47bc-8d5a-51f2974b4beb")
-		template<class TVisitor>
+		template<class TPattern, class TRegistrar>
 		static constexpr void RegisterMethod(std::integral_constant<int, 1> n)
 		{
-			TVisitor::Visit(n, Guid::StringToGuid("4426d571-240c-47bc-8d5a-51f2974b4beb"));
-
-			Microsoft::UIA::AddRemoteOperationExtension(
-				Guid::StringToGuid("4426d571-240c-47bc-8d5a-51f2974b4beb"),
-				1, // not sure what it is/how it is used
-				[](Microsoft::UIA::RemoteOperationContext& context, const std::vector<Microsoft::UIA::OperandId>& operandIds)
-				{
-					auto methodPointer = &FooPattern::SetFoo;
-					MethodInvoker<FooPattern>::Invoke(methodPointer, context, operandIds);
-				});
-
-			if constexpr (n > 0) RegisterMethod<TVisitor>(std::integral_constant<int, n - 1>{});
+			TRegistrar::Register(Guid::StringToGuid("4426d571-240c-47bc-8d5a-51f2974b4beb"), &TPattern::SetFoo);
+			if constexpr (n > 0) RegisterMethod<TPattern, TRegistrar>(std::integral_constant<int, n - 1>{});
 		}
-		template<class TVisitor>
+		template<class TRegistrar>
 		static constexpr void UnregisterMethod(std::integral_constant<int, 1> n)
 		{
-			Microsoft::UIA::RemoveRemoteOperationExtension(Guid::StringToGuid("4426d571-240c-47bc-8d5a-51f2974b4beb"));
-
-			if constexpr (n > 0) UnregisterMethod<TVisitor>(std::integral_constant<int, n - 1>{});
+			TRegistrar::Unregister(Guid::StringToGuid("4426d571-240c-47bc-8d5a-51f2974b4beb"));
+			if constexpr (n > 0) UnregisterMethod<TRegistrar>(std::integral_constant<int, n - 1>{});
 		}
 		void SetFoo(const std::wstring& val)
 		{
@@ -69,13 +47,13 @@ namespace App
 			m_foo = val;
 		}
 
-		CUSTOM_PATTERN_METHOD(2, "c583a435-e0c1-4ba9-be2d-6b8d714c7918")
+		CUSTOM_PATTERN_METHOD(2, AppendFoo, "c583a435-e0c1-4ba9-be2d-6b8d714c7918")
 		void AppendFoo(const std::wstring& val)
 		{
 			m_foo += val;
 		}
 
-		CUSTOM_PATTERN_METHOD(3, "13e7a41d-bad4-4ab2-806b-e57128302684")
+		CUSTOM_PATTERN_METHOD(3, ClearFoo, "13e7a41d-bad4-4ab2-806b-e57128302684")
 		void ClearFoo()
 		{
 			m_foo.clear();

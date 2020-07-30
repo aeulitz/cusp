@@ -9,14 +9,21 @@ using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
 struct TestRegistrar
 {
-	static void Visit(int n, const GUID& guid)
+	template<class TMethodPointer>
+	static constexpr void Register(const GUID& guid, TMethodPointer methodPointer)
 	{
-		TestRegistrar::OnRegister(n, guid);
+		TestRegistrar::OnRegister(guid);
 	}
-	static std::function<void(int n, const GUID& guid)> OnRegister;
+
+	static constexpr void Unregister(const GUID& guid)
+	{
+		// TODO: fire event
+	}
+
+	static std::function<void(const GUID& guid)> OnRegister;
 };
 
-std::function<void(int n, const GUID& guid)> TestRegistrar::OnRegister = [](int, const GUID&) {};
+std::function<void(const GUID& guid)> TestRegistrar::OnRegister = [](const GUID&) {};
 
 namespace UnitTest1
 {
@@ -27,9 +34,7 @@ namespace UnitTest1
 		TEST_METHOD(TestFooPatternRegistration)
 		{
 			std::vector<GUID> guids;
-			TestRegistrar::OnRegister = [&guids](int n, const GUID& guid) {
-				guids.push_back(guid);
-			};
+			TestRegistrar::OnRegister = [&guids](const GUID& guid) { guids.push_back(guid); };
 
 			App::FooPattern::RegisterMethods<TestRegistrar>();
 
@@ -39,18 +44,12 @@ namespace UnitTest1
 			Assert::AreEqual(GUID{ 0x4426d571, 0x240c, 0x47bc, {0x8d, 0x5a, 0x51, 0xf2, 0x97, 0x4b, 0x4b, 0xeb} }, guids[2]);
 			Assert::AreEqual(GUID{ 0xe6b31052, 0x4a7e, 0x4dad, {0xb3, 0x41, 0x85, 0x56, 0x09, 0xf4, 0x22, 0x32} }, guids[3]);
 
-			// temporary, while there's a hardcoded macro expansion
-			Assert::AreEqual(2ull, Microsoft::UIA::TestOnly_RemoteOperationCount());
-
-			App::FooPattern::UnregisterMethods();
-
-			// temporary, while there's a hardcoded macro expansion
-			Assert::AreEqual(0ull, Microsoft::UIA::TestOnly_RemoteOperationCount());
+			App::FooPattern::UnregisterMethods<TestRegistrar>();
 		}
 
 		TEST_METHOD(InvokeGetFoo)
 		{
-			App::FooPattern::RegisterMethods<TestRegistrar>();
+			App::FooPattern::RegisterMethods();
 
 			auto fooPatternInstance = winrt::make<App::FooPattern>();
 			int getFooCallCount = 0;
@@ -70,7 +69,7 @@ namespace UnitTest1
 		{
 			auto foo = winrt::box_value(L"string cheese");
 
-			App::FooPattern::RegisterMethods<TestRegistrar>();
+			App::FooPattern::RegisterMethods();
 
 			auto fooPatternInstance = winrt::make<App::FooPattern>();
 			int setFooCallCount = 0;

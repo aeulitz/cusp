@@ -16,25 +16,26 @@
 
 using namespace winrt::Windows::Foundation;
 
-#define CUSTOM_PATTERN_METHOD(N, GUID)                                                             \
-	template<class TVisitor>                                                                       \
+#define CUSTOM_PATTERN_METHOD(N, METHODNAME, GUID)                                                 \
+	template<class TPattern, class TRegistrar>                                                     \
 	static constexpr void RegisterMethod(std::integral_constant<int, N> n)                         \
 	{                                                                                              \
-		TVisitor::Visit(n, Guid::StringToGuid(GUID));                                              \
-		if constexpr (n > 0) RegisterMethod<TVisitor>(std::integral_constant<int, n - 1>{});       \
+		TRegistrar::Register(Guid::StringToGuid(GUID), &TPattern::METHODNAME);                     \
+		if constexpr (n > 0) RegisterMethod<TPattern, TRegistrar>(std::integral_constant<int, n - 1>{});     \
 	}                                                                                              \
-	template<class TVisitor>                                                                       \
+	template<class TRegistrar>                                                                       \
 	static constexpr void UnregisterMethod(std::integral_constant<int, N> n)                       \
 	{                                                                                              \
-		if constexpr (n > 0) UnregisterMethod<TVisitor>(std::integral_constant<int, n - 1>{});     \
+		TRegistrar::Unregister(Guid::StringToGuid(GUID));                                           \
+		if constexpr (n > 0) UnregisterMethod<TRegistrar>(std::integral_constant<int, n - 1>{});   \
 	}                                                                                              \
 
-template<class TPattern, class TVisitor>
+template<class TPattern, class TRegistrar>
 struct RegisterMethodCount
 {
 	template<int N>
 	static auto HasMethod(std::integral_constant<int, N> i)
-		-> decltype(TPattern::template RegisterMethod<TVisitor>(i), std::true_type{});
+		-> decltype(TPattern::template RegisterMethod<TPattern, TRegistrar>(i), std::true_type{});
 
 	template<int N>
 	static auto HasMethod(...)->std::false_type;
@@ -94,36 +95,42 @@ struct MethodInvoker
 	}
 };
 
-template<class TDerived>
-struct CustomPatternBase : public winrt::implements<TDerived, IInspectable>
+template<class TPattern>
+struct CustomPatternBase : public winrt::implements<TPattern, IInspectable>
 {
 	struct MethodRegistrar
 	{
-		static void Visit(int n, const GUID& guid)
+		template<class TMethodPointer>
+		static constexpr void Register(const GUID& guid, TMethodPointer methodPointer)
 		{
 			Microsoft::UIA::AddRemoteOperationExtension(
 				guid,
 				1, // not sure what it is/how it is used
-				[](Microsoft::UIA::RemoteOperationContext& context, const std::vector<Microsoft::UIA::OperandId>& operandIds)
+				[methodPointer](Microsoft::UIA::RemoteOperationContext& context, const std::vector<Microsoft::UIA::OperandId>& operandIds)
 				{
-					auto _this = context.GetOperand(operandIds[0]).as<TDerived>();
+					MethodInvoker<TPattern>::Invoke(methodPointer, context, operandIds);
 				});
+		}
+
+		static constexpr void Unregister(const GUID& guid)
+		{
+			Microsoft::UIA::RemoveRemoteOperationExtension(guid);
 		}
 	};
 
-	template<class TVisitor = MethodRegistrar>
+	template<class TRegistrar = MethodRegistrar>
 	static constexpr void RegisterMethods()
 	{
-		std::integral_constant<int, RegisterMethodCount<TDerived, TVisitor>::Get() - 1> n;
+		std::integral_constant<int, RegisterMethodCount<TPattern, TRegistrar>::Get() - 1> n;
 
-		TDerived::template RegisterMethod<TVisitor>(n);
+		TPattern::template RegisterMethod<TPattern, TRegistrar>(n);
 	}
 
-	template<class TVisitor = MethodRegistrar>
+	template<class TRegistrar = MethodRegistrar>
 	static constexpr void UnregisterMethods()
 	{
-		std::integral_constant<int, RegisterMethodCount<TDerived, TVisitor>::Get() - 1> n;
+		std::integral_constant<int, RegisterMethodCount<TPattern, TRegistrar>::Get() - 1> n;
 
-		TDerived::template UnregisterMethod<TVisitor>(n);
+		TPattern::template UnregisterMethod<TRegistrar>(n);
 	}
 };
