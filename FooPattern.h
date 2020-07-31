@@ -70,17 +70,36 @@ namespace App
 			return m_int;
 		}
 
+		CUSTOM_PATTERN_METHOD(5, SetBool, "25fb1199-db6f-4349-86aa-436d376a6843")
+		void SetBool(bool val)
+		{
+			// example of a 'void(bool)' method
+			if (OnSetBool) OnSetBool(val);
+			m_bool = val;
+		}
+
+		CUSTOM_PATTERN_METHOD(6, GetBool, "a9487d87-8935-49ad-9473-fadce0bfa974")
+		bool GetBool()
+		{
+			// example of an 'bool(void)' method
+			if (OnGetBool) OnGetBool();
+			return m_bool;
+		}
+
 		//
 		// for testing
 		//
+		std::function<void(bool)> OnSetBool = nullptr;
+		std::function<void()> OnGetBool = nullptr;
+		std::function<void(int)> OnSetInt = nullptr;
+		std::function<void()> OnGetInt = nullptr;
 		std::function<void()> OnGetString = nullptr;
 		std::function<void(const std::wstring&)> OnSetString = nullptr;
 		std::function<void()> OnClearString = nullptr;
-		std::function<void(int)> OnSetInt = nullptr;
-		std::function<void()> OnGetInt = nullptr;
 
 	private:
-		std::wstring m_string;
+		int m_bool;
 		int m_int;
+		std::wstring m_string;
 	};
 }

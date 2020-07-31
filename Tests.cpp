@@ -40,29 +40,33 @@ namespace UnitTest1
 
 			App::FooPattern::RegisterMethods<TestRegistrar>();
 
-			Assert::AreEqual(5ull, guids.size());
-			Assert::AreEqual(getIntGuid, guids[0]);
-			Assert::AreEqual(setIntGuid, guids[1]);
-			Assert::AreEqual(clearStringGuid, guids[2]);
-			Assert::AreEqual(setStringGuid, guids[3]);
-			Assert::AreEqual(getStringGuid, guids[4]);
+			Assert::AreEqual(7ull, guids.size());
+			Assert::AreEqual(getBoolGuid, guids[0]);
+			Assert::AreEqual(setBoolGuid, guids[1]);
+			Assert::AreEqual(getIntGuid, guids[2]);
+			Assert::AreEqual(setIntGuid, guids[3]);
+			Assert::AreEqual(clearStringGuid, guids[4]);
+			Assert::AreEqual(setStringGuid, guids[5]);
+			Assert::AreEqual(getStringGuid, guids[6]);
 
 			guids.clear();
 
 			App::FooPattern::UnregisterMethods<TestRegistrar>();
 
-			Assert::AreEqual(5ull, guids.size());
-			Assert::AreEqual(getIntGuid, guids[0]);
-			Assert::AreEqual(setIntGuid, guids[1]);
-			Assert::AreEqual(clearStringGuid, guids[2]);
-			Assert::AreEqual(setStringGuid, guids[3]);
-			Assert::AreEqual(getStringGuid, guids[4]);
+			Assert::AreEqual(7ull, guids.size());
+			Assert::AreEqual(getBoolGuid, guids[0]);
+			Assert::AreEqual(setBoolGuid, guids[1]);
+			Assert::AreEqual(getIntGuid, guids[2]);
+			Assert::AreEqual(setIntGuid, guids[3]);
+			Assert::AreEqual(clearStringGuid, guids[4]);
+			Assert::AreEqual(setStringGuid, guids[5]);
+			Assert::AreEqual(getStringGuid, guids[6]);
 		}
 
 		TEST_METHOD(GetString)
 		{
 			App::FooPattern::RegisterMethods();
-			Assert::AreEqual(5ull, Microsoft::UIA::TestOnly_RemoteOperationCount());
+			Assert::AreEqual(7ull, Microsoft::UIA::TestOnly_RemoteOperationCount());
 
 			auto fooPatternInstance = winrt::make<App::FooPattern>();
 
@@ -178,12 +182,61 @@ namespace UnitTest1
 			App::FooPattern::UnregisterMethods();
 		}
 
+		TEST_METHOD(GetBool)
+		{
+			App::FooPattern::RegisterMethods();
+
+			auto fooPatternInstance = winrt::make<App::FooPattern>();
+
+			// set the value to be able to verify the return value of the 'GetBool' call
+			fooPatternInstance.as<App::FooPattern>()->SetBool(true);
+
+			int getBoolCallCount = 0;
+			fooPatternInstance.as<App::FooPattern>()->OnGetBool = [&getBoolCallCount]() { ++getBoolCallCount; };
+
+			Microsoft::UIA::RemoteOperationContext context;
+			context.SetOperand(0, fooPatternInstance);
+
+			Microsoft::UIA::CallRemoteOperationExtension(getBoolGuid, context, { 0, 1 });
+
+			Assert::AreEqual(1, getBoolCallCount);
+
+			Assert::IsTrue(winrt::unbox_value<bool>(context.GetOperand(1)));
+
+			App::FooPattern::UnregisterMethods();
+		}
+
+		TEST_METHOD(SetBool)
+		{
+			App::FooPattern::RegisterMethods();
+
+			auto fooPatternInstance = winrt::make<App::FooPattern>();
+
+			std::vector<bool> setBoolArguments;
+			fooPatternInstance.as<App::FooPattern>()->OnSetBool = [&setBoolArguments](bool val) { setBoolArguments.push_back(val); };
+
+			Microsoft::UIA::RemoteOperationContext context;
+			context.SetOperand(0, fooPatternInstance);
+			context.SetOperand(1, winrt::box_value(true));
+
+			Microsoft::UIA::CallRemoteOperationExtension(setBoolGuid, context, { 0, 1 });
+
+			Assert::AreEqual(1ull, setBoolArguments.size());
+			Assert::IsTrue(setBoolArguments[0]);
+
+			Assert::IsTrue(fooPatternInstance.as<App::FooPattern>()->GetBool());
+
+			App::FooPattern::UnregisterMethods();
+		}
+
 	private:
+		static inline GUID setBoolGuid{ 0x25fb1199, 0xdb6f, 0x4349, {0x86, 0xaa, 0x43, 0x6d, 0x37, 0x6a, 0x68, 0x43} };
+		static inline GUID getBoolGuid{ 0xa9487d87, 0x8935, 0x49ad, {0x94, 0x73, 0xfa, 0xdc, 0xe0, 0xbf, 0xa9, 0x74} };
+		static inline GUID setIntGuid{ 0x921a5d67, 0x9a8f, 0x4c38, {0xb6, 0x76, 0x5c, 0x8c, 0x2d, 0x44, 0xef, 0x18} };
+		static inline GUID getIntGuid{ 0x85e4d90e, 0xa804, 0x4a45, {0xa0, 0xe2, 0x3f, 0x57, 0x2f, 0x5c, 0xcf, 0xa9} };
 		static inline GUID getStringGuid{ 0xe6b31052, 0x4a7e, 0x4dad, {0xb3, 0x41, 0x85, 0x56, 0x09, 0xf4, 0x22, 0x32} };
 		static inline GUID setStringGuid{ 0x4426d571, 0x240c, 0x47bc, {0x8d, 0x5a, 0x51, 0xf2, 0x97, 0x4b, 0x4b, 0xeb} };
 		static inline GUID clearStringGuid{ 0x13e7a41d, 0xbad4, 0x4ab2, {0x80, 0x6b, 0xe5, 0x71, 0x28, 0x30, 0x26, 0x84} };
-		static inline GUID setIntGuid{ 0x921a5d67, 0x9a8f, 0x4c38, {0xb6, 0x76, 0x5c, 0x8c, 0x2d, 0x44, 0xef, 0x18} };
-		static inline GUID getIntGuid{ 0x85e4d90e, 0xa804, 0x4a45, {0xa0, 0xe2, 0x3f, 0x57, 0x2f, 0x5c, 0xcf, 0xa9} };
-		// static inline GUID clearStringGuid{ 0x, 0x, 0x, {0x, 0x, 0x, 0x, 0x, 0x, 0x, 0x} };
+		// static inline GUID Guid{ 0x, 0x, 0x, {0x, 0x, 0x, 0x, 0x, 0x, 0x, 0x} };
 	};
 }
