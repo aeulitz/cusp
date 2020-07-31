@@ -57,27 +57,27 @@ namespace UnitTest1
 			Assert::AreEqual(GUID{ 0xe6b31052, 0x4a7e, 0x4dad, {0xb3, 0x41, 0x85, 0x56, 0x09, 0xf4, 0x22, 0x32} }, guids[3]);
 		}
 
-		TEST_METHOD(GetFoo)
+		TEST_METHOD(GetString)
 		{
 			App::FooPattern::RegisterMethods();
 			Assert::AreEqual(4ull, Microsoft::UIA::TestOnly_RemoteOperationCount());
 
 			auto fooPatternInstance = winrt::make<App::FooPattern>();
-			int getFooCallCount = 0;
-			fooPatternInstance.as<App::FooPattern>()->OnGetFoo = [&getFooCallCount]() { ++getFooCallCount; };
+			int getStringCallCount = 0;
+			fooPatternInstance.as<App::FooPattern>()->OnGetString = [&getStringCallCount]() { ++getStringCallCount; };
 
 			Microsoft::UIA::RemoteOperationContext context;
 			context.SetOperand(0, fooPatternInstance);
 
-			Microsoft::UIA::CallRemoteOperationExtension(getFooGuid, context, { 0 });
+			Microsoft::UIA::CallRemoteOperationExtension(getStringGuid, context, { 0 });
 
-			Assert::AreEqual(1, getFooCallCount);
+			Assert::AreEqual(1, getStringCallCount);
 
 			App::FooPattern::UnregisterMethods();
 			Assert::AreEqual(0ull, Microsoft::UIA::TestOnly_RemoteOperationCount());
 		}
 
-		TEST_METHOD(SetFoo)
+		TEST_METHOD(SetString)
 		{
 			App::FooPattern::RegisterMethods();
 			Assert::AreEqual(4ull, Microsoft::UIA::TestOnly_RemoteOperationCount());
@@ -85,25 +85,51 @@ namespace UnitTest1
 			auto fooPatternInstance = winrt::make<App::FooPattern>();
 
 			std::vector<std::wstring> arguments;
-			fooPatternInstance.as<App::FooPattern>()->OnSetFoo = [&arguments](const std::wstring& val) { arguments.push_back(val); };
+			fooPatternInstance.as<App::FooPattern>()->OnSetString = [&arguments](const std::wstring& val) { arguments.push_back(val); };
 
 			Microsoft::UIA::RemoteOperationContext context;
 			context.SetOperand(0, fooPatternInstance);
 			context.SetOperand(1, winrt::box_value(L"string cheese"));
 
-			Microsoft::UIA::CallRemoteOperationExtension(setFooGuid, context, { 0, 1 });
+			Microsoft::UIA::CallRemoteOperationExtension(setStringGuid, context, { 0, 1 });
 
 			Assert::AreEqual(1ull, arguments.size());
 			Assert::AreEqual(L"string cheese", arguments[0].c_str());
 
-			Assert::AreEqual(L"string cheese", fooPatternInstance.as<App::FooPattern>()->GetFoo());
+			Assert::AreEqual(L"string cheese", fooPatternInstance.as<App::FooPattern>()->GetString());
+
+			App::FooPattern::UnregisterMethods();
+			Assert::AreEqual(0ull, Microsoft::UIA::TestOnly_RemoteOperationCount());
+		}
+
+		TEST_METHOD(ClearString)
+		{
+			App::FooPattern::RegisterMethods();
+			Assert::AreEqual(4ull, Microsoft::UIA::TestOnly_RemoteOperationCount());
+
+			auto fooPatternInstance = winrt::make<App::FooPattern>();
+
+			// set the value to be able to verify the effect of the 'ClearString' call
+			fooPatternInstance.as<App::FooPattern>()->SetString(L"meatballs");
+
+			int clearStringCallCount = 0;
+			fooPatternInstance.as<App::FooPattern>()->OnClearString = [&clearStringCallCount]() { ++clearStringCallCount; };
+
+			Microsoft::UIA::RemoteOperationContext context;
+			context.SetOperand(0, fooPatternInstance);
+
+			Microsoft::UIA::CallRemoteOperationExtension(clearStringGuid, context, { 0 });
+
+			Assert::AreEqual(1, clearStringCallCount);
+			Assert::AreEqual(L"", fooPatternInstance.as<App::FooPattern>()->GetString());
 
 			App::FooPattern::UnregisterMethods();
 			Assert::AreEqual(0ull, Microsoft::UIA::TestOnly_RemoteOperationCount());
 		}
 
 	private:
-		static inline GUID getFooGuid{ 0xe6b31052, 0x4a7e, 0x4dad, {0xb3, 0x41, 0x85, 0x56, 0x09, 0xf4, 0x22, 0x32} };
-		static inline GUID setFooGuid{ 0x4426d571, 0x240c, 0x47bc, {0x8d, 0x5a, 0x51, 0xf2, 0x97, 0x4b, 0x4b, 0xeb} };
+		static inline GUID getStringGuid{ 0xe6b31052, 0x4a7e, 0x4dad, {0xb3, 0x41, 0x85, 0x56, 0x09, 0xf4, 0x22, 0x32} };
+		static inline GUID setStringGuid{ 0x4426d571, 0x240c, 0x47bc, {0x8d, 0x5a, 0x51, 0xf2, 0x97, 0x4b, 0x4b, 0xeb} };
+		static inline GUID clearStringGuid{ 0x13e7a41d, 0xbad4, 0x4ab2, {0x80, 0x6b, 0xe5, 0x71, 0x28, 0x30, 0x26, 0x84} };
 	};
 }
