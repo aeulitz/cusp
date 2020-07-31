@@ -53,6 +53,7 @@ struct RegisterMethodCount
 template<class TTarget>
 TTarget Unbox(const IInspectable& val)
 {
+	return winrt::unbox_value<TTarget>(val);
 }
 
 template <>
@@ -65,6 +66,7 @@ std::wstring Unbox<std::wstring>(const IInspectable& val)
 template<class T>
 struct UnboxMapping
 {
+	using TargetType = T;
 };
 
 template<>

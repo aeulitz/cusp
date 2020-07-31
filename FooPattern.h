@@ -27,7 +27,7 @@ namespace App
 			return m_string.c_str();
 		}
 
-		// CUSTOM_PATTERN_METHOD(1, SetFoo, "4426d571-240c-47bc-8d5a-51f2974b4beb")
+		// CUSTOM_PATTERN_METHOD(1, SetString, "4426d571-240c-47bc-8d5a-51f2974b4beb")
 		template<class TPattern, class TRegistrar>
 		static constexpr void RegisterMethod(std::integral_constant<int, 1> n)
 		{
@@ -46,28 +46,41 @@ namespace App
 			m_string = val;
 		}
 
-		CUSTOM_PATTERN_METHOD(2, AppendString, "c583a435-e0c1-4ba9-be2d-6b8d714c7918")
-		void AppendString(const std::wstring& val)
-		{
-			m_string += val;
-		}
-
-		CUSTOM_PATTERN_METHOD(3, ClearString, "13e7a41d-bad4-4ab2-806b-e57128302684")
+		CUSTOM_PATTERN_METHOD(2, ClearString, "13e7a41d-bad4-4ab2-806b-e57128302684")
 		void ClearString()
 		{
+			// example of a 'void(void)' method
 			if (OnClearString) OnClearString();
 			m_string.clear();
+		}
+
+		CUSTOM_PATTERN_METHOD(3, SetInt, "921a5d67-9a8f-4c38-b676-5c8c2d44ef18")
+		void SetInt(int val)
+		{
+			// example of a 'void(int)' method
+			if (OnSetInt) OnSetInt(val);
+			m_int = val;
+		}
+
+		CUSTOM_PATTERN_METHOD(4, GetInt, "85e4d90e-a804-4a45-a0e2-3f572f5ccfa9")
+		int GetInt()
+		{
+			// example of an 'int(void)' method
+			if (OnGetInt) OnGetInt();
+			return m_int;
 		}
 
 		//
 		// for testing
 		//
-
 		std::function<void()> OnGetString = nullptr;
 		std::function<void(const std::wstring&)> OnSetString = nullptr;
 		std::function<void()> OnClearString = nullptr;
+		std::function<void(int)> OnSetInt = nullptr;
+		std::function<void()> OnGetInt = nullptr;
 
 	private:
 		std::wstring m_string;
+		int m_int;
 	};
 }
