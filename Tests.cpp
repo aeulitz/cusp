@@ -63,15 +63,21 @@ namespace UnitTest1
 			Assert::AreEqual(4ull, Microsoft::UIA::TestOnly_RemoteOperationCount());
 
 			auto fooPatternInstance = winrt::make<App::FooPattern>();
+
+			// set the value to be able to verify the return value of the 'GetString' call
+			fooPatternInstance.as<App::FooPattern>()->SetString(L"pool noodle");
+
 			int getStringCallCount = 0;
 			fooPatternInstance.as<App::FooPattern>()->OnGetString = [&getStringCallCount]() { ++getStringCallCount; };
 
 			Microsoft::UIA::RemoteOperationContext context;
 			context.SetOperand(0, fooPatternInstance);
 
-			Microsoft::UIA::CallRemoteOperationExtension(getStringGuid, context, { 0 });
+			Microsoft::UIA::CallRemoteOperationExtension(getStringGuid, context, { 0, 1 });
 
 			Assert::AreEqual(1, getStringCallCount);
+
+			Assert::AreEqual(L"pool noodle", winrt::unbox_value<winrt::hstring>(context.GetOperand(1)).c_str());
 
 			App::FooPattern::UnregisterMethods();
 			Assert::AreEqual(0ull, Microsoft::UIA::TestOnly_RemoteOperationCount());
@@ -84,8 +90,8 @@ namespace UnitTest1
 
 			auto fooPatternInstance = winrt::make<App::FooPattern>();
 
-			std::vector<std::wstring> arguments;
-			fooPatternInstance.as<App::FooPattern>()->OnSetString = [&arguments](const std::wstring& val) { arguments.push_back(val); };
+			std::vector<std::wstring> setStringArguments;
+			fooPatternInstance.as<App::FooPattern>()->OnSetString = [&setStringArguments](const std::wstring& val) { setStringArguments.push_back(val); };
 
 			Microsoft::UIA::RemoteOperationContext context;
 			context.SetOperand(0, fooPatternInstance);
@@ -93,8 +99,8 @@ namespace UnitTest1
 
 			Microsoft::UIA::CallRemoteOperationExtension(setStringGuid, context, { 0, 1 });
 
-			Assert::AreEqual(1ull, arguments.size());
-			Assert::AreEqual(L"string cheese", arguments[0].c_str());
+			Assert::AreEqual(1ull, setStringArguments.size());
+			Assert::AreEqual(L"string cheese", setStringArguments[0].c_str());
 
 			Assert::AreEqual(L"string cheese", fooPatternInstance.as<App::FooPattern>()->GetString());
 

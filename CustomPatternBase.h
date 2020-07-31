@@ -77,21 +77,35 @@ struct UnboxMapping<const std::wstring&>
 template<class TPattern>
 struct MethodInvoker
 {
+
 	template<class TReturn>
-	static TReturn Invoke(TReturn(TPattern::* methodPointer)(), const Microsoft::UIA::RemoteOperationContext& context, const std::vector<Microsoft::UIA::OperandId>& operandIds)
+	static constexpr void Invoke(TReturn(TPattern::* methodPointer)(), Microsoft::UIA::RemoteOperationContext& context, const std::vector<Microsoft::UIA::OperandId>& operandIds)
 	{
 		TPattern* _this = context.GetOperand(operandIds[0]).as<TPattern>().get();
-		// stick return value into context rather than returning it?
-		return (_this->*methodPointer)();
-
+		if constexpr (std::is_void<TReturn>::value)
+		{
+			(_this->*methodPointer)();
+		}
+		else
+		{
+			TReturn retVal = (_this->*methodPointer)();
+			context.SetOperand(operandIds[1], winrt::box_value(retVal));
+		}
 	}
 
 	template<class TReturn, class TArg0>
-	static TReturn Invoke(TReturn(TPattern::* methodPointer)(TArg0), const Microsoft::UIA::RemoteOperationContext& context, const std::vector<Microsoft::UIA::OperandId>& operandIds)
+	static constexpr void Invoke(TReturn(TPattern::* methodPointer)(TArg0), Microsoft::UIA::RemoteOperationContext& context, const std::vector<Microsoft::UIA::OperandId>& operandIds)
 	{
 		TPattern* _this = context.GetOperand(operandIds[0]).as<TPattern>().get();
-		// stick return value into context rather than returning it?
-		return (_this->*methodPointer)(Unbox<UnboxMapping<TArg0>::TargetType>(context.GetOperand(operandIds[1])));
+		if constexpr (std::is_void<TReturn>::value)
+		{
+			(_this->*methodPointer)(Unbox<UnboxMapping<TArg0>::TargetType>(context.GetOperand(operandIds[1])));
+		}
+		else
+		{
+			TReturn retVal = (_this->*methodPointer)(Unbox<UnboxMapping<TArg0>::TargetType>(context.GetOperand(operandIds[1])));
+			context.SetOperand(operandIds[2], winrt::box_value(retVal));
+		}
 	}
 };
 
