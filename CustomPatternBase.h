@@ -16,19 +16,19 @@
 
 using namespace winrt::Windows::Foundation;
 
-#define CUSTOM_PATTERN_METHOD(N, METHODNAME, GUID)                                                 \
-	template<class TPattern, class TRegistrar>                                                     \
-	static constexpr void RegisterMethod(std::integral_constant<int, N> n)                         \
-	{                                                                                              \
-		TRegistrar::Register(Guid::StringToGuid(GUID), &TPattern::METHODNAME);                     \
-		if constexpr (n > 0) RegisterMethod<TPattern, TRegistrar>(std::integral_constant<int, n - 1>{});     \
-	}                                                                                              \
-	template<class TRegistrar>                                                                       \
-	static constexpr void UnregisterMethod(std::integral_constant<int, N> n)                       \
-	{                                                                                              \
-		TRegistrar::Unregister(Guid::StringToGuid(GUID));                                           \
-		if constexpr (n > 0) UnregisterMethod<TRegistrar>(std::integral_constant<int, n - 1>{});   \
-	}                                                                                              \
+#define CUSTOM_PATTERN_METHOD(N, METHODNAME, GUID)                                                       \
+	template<class TPattern, class TRegistrar>                                                           \
+	static constexpr void RegisterMethod(std::integral_constant<int, N> n)                               \
+	{                                                                                                    \
+		TRegistrar::Register(Guid::StringToGuid(GUID), &TPattern::METHODNAME);                           \
+		if constexpr (n > 0) RegisterMethod<TPattern, TRegistrar>(std::integral_constant<int, n - 1>{}); \
+	}                                                                                                    \
+	template<class TRegistrar>                                                                           \
+	static constexpr void UnregisterMethod(std::integral_constant<int, N> n)                             \
+	{                                                                                                    \
+		TRegistrar::Unregister(Guid::StringToGuid(GUID));                                                \
+		if constexpr (n > 0) UnregisterMethod<TRegistrar>(std::integral_constant<int, n - 1>{});         \
+	}                                                                                                    \
 
 template<class TPattern, class TRegistrar>
 struct RegisterMethodCount
