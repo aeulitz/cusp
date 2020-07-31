@@ -86,6 +86,38 @@ namespace App
 			return m_bool;
 		}
 
+		CUSTOM_PATTERN_METHOD(7, SetFloat, "4d111a79-4b56-4a23-aefa-a56b51337f09")
+		void SetFloat(float val)
+		{
+			// example of a 'void(float)' method
+			if (OnSetFloat) OnSetFloat(val);
+			m_float = val;
+		}
+
+		CUSTOM_PATTERN_METHOD(8, GetFloat, "71667878-2e43-4901-af9c-0eb139f79439")
+		float GetFloat()
+		{
+			// example of an 'float(void)' method
+			if (OnGetFloat) OnGetFloat();
+			return m_float;
+		}
+
+		CUSTOM_PATTERN_METHOD(9, SetDouble, "16c06415-52f3-4317-8ffc-a2d4b39cddfb")
+		void SetDouble(double val)
+		{
+			// example of a 'void(double)' method
+			if (OnSetDouble) OnSetDouble(val);
+			m_double = val;
+		}
+
+		CUSTOM_PATTERN_METHOD(10, GetDouble, "643bd34c-c22c-4255-92e7-e2ed4a104782")
+		double GetDouble()
+		{
+			// example of an 'double(void)' method
+			if (OnGetDouble) OnGetDouble();
+			return m_double;
+		}
+
 		//
 		// for testing
 		//
@@ -93,13 +125,19 @@ namespace App
 		std::function<void()> OnGetBool = nullptr;
 		std::function<void(int)> OnSetInt = nullptr;
 		std::function<void()> OnGetInt = nullptr;
-		std::function<void()> OnGetString = nullptr;
+		std::function<void(float)> OnSetFloat = nullptr;
+		std::function<void()> OnGetFloat = nullptr;
+		std::function<void(double)> OnSetDouble = nullptr;
+		std::function<void()> OnGetDouble = nullptr;
 		std::function<void(const std::wstring&)> OnSetString = nullptr;
+		std::function<void()> OnGetString = nullptr;
 		std::function<void()> OnClearString = nullptr;
 
 	private:
-		int m_bool;
+		bool m_bool;
 		int m_int;
+		float m_float;
+		double m_double;
 		std::wstring m_string;
 	};
 }
