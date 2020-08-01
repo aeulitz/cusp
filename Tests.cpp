@@ -6,30 +6,30 @@
 
 #include <functional>
 
-using namespace Microsoft::VisualStudio::CppUnitTestFramework;
-
-struct TestRegistrar
+namespace CuspTest
 {
-	template<class TMethodPointer>
-	static constexpr void Register(const GUID& guid, TMethodPointer methodPointer)
+	using namespace Microsoft::VisualStudio::CppUnitTestFramework;
+
+	struct TestRegistrar
 	{
-		TestRegistrar::OnRegister(guid);
-	}
+		template<class TMethodPointer>
+		static constexpr void Register(const GUID& guid, TMethodPointer methodPointer)
+		{
+			TestRegistrar::OnRegister(guid);
+		}
 
-	static inline void Unregister(const GUID& guid)
-	{
-		TestRegistrar::OnUnregister(guid);
-	}
+		static inline void Unregister(const GUID& guid)
+		{
+			TestRegistrar::OnUnregister(guid);
+		}
 
-	static std::function<void(const GUID& guid)> OnRegister;
-	static std::function<void(const GUID& guid)> OnUnregister;
-};
+		static std::function<void(const GUID& guid)> OnRegister;
+		static std::function<void(const GUID& guid)> OnUnregister;
+	};
 
-std::function<void(const GUID& guid)> TestRegistrar::OnRegister = [](const GUID&) {};
-std::function<void(const GUID& guid)> TestRegistrar::OnUnregister = [](const GUID&) {};
+	std::function<void(const GUID& guid)> TestRegistrar::OnRegister = [](const GUID&) {};
+	std::function<void(const GUID& guid)> TestRegistrar::OnUnregister = [](const GUID&) {};
 
-namespace UnitTest1
-{
 	TEST_CLASS(FooPatternTests)
 	{
 	public:
@@ -370,9 +370,6 @@ namespace UnitTest1
 			Assert::AreEqual(1ull, setBoolIntArguments.size());
 			Assert::IsTrue(setBoolIntArguments[0].first);
 			Assert::AreEqual(23, setBoolIntArguments[0].second);
-
-			Assert::IsTrue(barPatternInstance.as<App::BarPattern>()->GetBool());
-			Assert::AreEqual(23, barPatternInstance.as<App::BarPattern>()->GetInt());
 
 			App::BarPattern::UnregisterMethods();
 		}

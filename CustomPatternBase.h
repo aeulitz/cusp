@@ -5,15 +5,6 @@
 
 #include <winrt/Windows.Foundation.h>
 
-#include <iostream>
-#include <type_traits>
-
-// Learnings:
-// - If a constexpr function prints to std::out, it causes
-//     error C3615: constexpr function '...' cannot result in a constant expression
-//   Is that (one of) the reasons Vladimir uses the visitor pattern?
-// - interesting article: https://www.drdobbs.com/cpp/extracting-function-parameter-and-return/240000586
-
 using namespace winrt::Windows::Foundation;
 
 #define CUSTOM_PATTERN_METHOD(N, METHODNAME, GUID)                                                       \
