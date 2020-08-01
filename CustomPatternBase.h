@@ -109,6 +109,25 @@ struct MethodInvoker
 			context.SetOperand(operandIds[2], winrt::box_value(retVal));
 		}
 	}
+
+	template<class TReturn, class TArg0, class TArg1>
+	static constexpr void Invoke(TReturn(TPattern::* methodPointer)(TArg0, TArg1), Microsoft::UIA::RemoteOperationContext& context, const std::vector<Microsoft::UIA::OperandId>& operandIds)
+	{
+		TPattern* _this = context.GetOperand(operandIds[0]).as<TPattern>().get();
+		if constexpr (std::is_void<TReturn>::value)
+		{
+			(_this->*methodPointer)(
+				Unbox<UnboxMapping<TArg0>::TargetType>(context.GetOperand(operandIds[1])),
+				Unbox<UnboxMapping<TArg1>::TargetType>(context.GetOperand(operandIds[2])));
+		}
+		else
+		{
+			TReturn retVal = (_this->*methodPointer)(
+				Unbox<UnboxMapping<TArg0>::TargetType>(context.GetOperand(operandIds[1])),
+				Unbox<UnboxMapping<TArg0>::TargetType>(context.GetOperand(operandIds[2])));
+			context.SetOperand(operandIds[3], winrt::box_value(retVal));
+		}
+	}
 };
 
 template<class TPattern>

@@ -171,6 +171,7 @@
     <ClCompile Include="UIA.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="BarPattern.h" />
     <ClInclude Include="FooPattern.h" />
     <ClInclude Include="CustomPatternBase.h" />
     <ClInclude Include="GuidUtils.h" />
