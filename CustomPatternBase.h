@@ -160,7 +160,7 @@ struct CustomPatternBase : public winrt::implements<TPattern, IInspectable>
 	}
 
 	template<class TRegistrar = MethodRegistrar>
-	static constexpr void RegisterMethods()
+	static constexpr void Register()
 	{
 		Microsoft::UIA::AddRemoteOperationExtension(
 			GuidHolder<TPattern>::value,
@@ -182,7 +182,7 @@ struct CustomPatternBase : public winrt::implements<TPattern, IInspectable>
 	}
 
 	template<class TRegistrar = MethodRegistrar>
-	static constexpr void UnregisterMethods()
+	static constexpr void Unregister()
 	{
 		Microsoft::UIA::RemoveRemoteOperationExtension(GuidHolder<TPattern>::value);
 		std::integral_constant<int, RegisterMethodCount<TPattern, TRegistrar>::Get() - 1> n;

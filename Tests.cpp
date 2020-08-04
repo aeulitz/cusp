@@ -38,7 +38,7 @@ namespace CuspTest
 			std::vector<GUID> guids;
 			TestRegistrar::OnRegister = TestRegistrar::OnUnregister = [&guids](const GUID& guid) { guids.push_back(guid); };
 
-			App::FooPattern::RegisterMethods<TestRegistrar>();
+			App::FooPattern::Register<TestRegistrar>();
 
 			Assert::AreEqual(11ull, guids.size());
 			Assert::AreEqual(clearStringGuid, guids[0]);
@@ -55,7 +55,7 @@ namespace CuspTest
 
 			guids.clear();
 
-			App::FooPattern::UnregisterMethods<TestRegistrar>();
+			App::FooPattern::Unregister<TestRegistrar>();
 
 			Assert::AreEqual(11ull, guids.size());
 			Assert::AreEqual(clearStringGuid, guids[0]);
@@ -73,7 +73,7 @@ namespace CuspTest
 
 		TEST_METHOD(GetBool)
 		{
-			App::FooPattern::RegisterMethods();
+			App::FooPattern::Register();
 
 			auto fooPatternInstance = winrt::make<App::FooPattern>();
 
@@ -92,12 +92,12 @@ namespace CuspTest
 			Assert::AreEqual(1, getBoolCallCount);
 			Assert::IsTrue(winrt::unbox_value<bool>(context.GetOperand(1)));
 
-			App::FooPattern::UnregisterMethods();
+			App::FooPattern::Unregister();
 		}
 
 		TEST_METHOD(SetBool)
 		{
-			App::FooPattern::RegisterMethods();
+			App::FooPattern::Register();
 
 			auto fooPatternInstance = winrt::make<App::FooPattern>();
 
@@ -116,12 +116,12 @@ namespace CuspTest
 
 			Assert::AreEqual(1ull, setBoolArguments.size());
 
-			App::FooPattern::UnregisterMethods();
+			App::FooPattern::Unregister();
 		}
 
 		TEST_METHOD(GetInt)
 		{
-			App::FooPattern::RegisterMethods();
+			App::FooPattern::Register();
 
 			auto fooPatternInstance = winrt::make<App::FooPattern>();
 
@@ -142,12 +142,12 @@ namespace CuspTest
 
 			Assert::AreEqual(23, winrt::unbox_value<int>(context.GetOperand(1)));
 
-			App::FooPattern::UnregisterMethods();
+			App::FooPattern::Unregister();
 		}
 
 		TEST_METHOD(SetInt)
 		{
-			App::FooPattern::RegisterMethods();
+			App::FooPattern::Register();
 
 			auto fooPatternInstance = winrt::make<App::FooPattern>();
 
@@ -168,12 +168,12 @@ namespace CuspTest
 			Assert::AreEqual(1ull, setIntArguments.size());
 			Assert::AreEqual(23, setIntArguments[0]);
 
-			App::FooPattern::UnregisterMethods();
+			App::FooPattern::Unregister();
 		}
 
 		TEST_METHOD(GetFloat)
 		{
-			App::FooPattern::RegisterMethods();
+			App::FooPattern::Register();
 
 			auto fooPatternInstance = winrt::make<App::FooPattern>();
 
@@ -193,12 +193,12 @@ namespace CuspTest
 			Assert::AreEqual(1, getFloatCallCount);
 			Assert::AreEqual(1.234f, winrt::unbox_value<float>(context.GetOperand(1)));
 
-			App::FooPattern::UnregisterMethods();
+			App::FooPattern::Unregister();
 		}
 
 		TEST_METHOD(SetFloat)
 		{
-			App::FooPattern::RegisterMethods();
+			App::FooPattern::Register();
 
 			auto fooPatternInstance = winrt::make<App::FooPattern>();
 
@@ -214,12 +214,12 @@ namespace CuspTest
 			Assert::AreEqual(1ull, setFloatArguments.size());
 			Assert::AreEqual(1.234f, setFloatArguments[0]);
 
-			App::FooPattern::UnregisterMethods();
+			App::FooPattern::Unregister();
 		}
 
 		TEST_METHOD(GetDouble)
 		{
-			App::FooPattern::RegisterMethods();
+			App::FooPattern::Register();
 
 			auto fooPatternInstance = winrt::make<App::FooPattern>();
 
@@ -239,12 +239,12 @@ namespace CuspTest
 			Assert::AreEqual(1, getDoubleCallCount);
 			Assert::AreEqual(1.234, winrt::unbox_value<double>(context.GetOperand(1)));
 
-			App::FooPattern::UnregisterMethods();
+			App::FooPattern::Unregister();
 		}
 
 		TEST_METHOD(SetDouble)
 		{
-			App::FooPattern::RegisterMethods();
+			App::FooPattern::Register();
 
 			auto fooPatternInstance = winrt::make<App::FooPattern>();
 
@@ -265,12 +265,12 @@ namespace CuspTest
 			Assert::AreEqual(1ull, setDoubleArguments.size());
 			Assert::AreEqual(1.234, setDoubleArguments[0]);
 
-			App::FooPattern::UnregisterMethods();
+			App::FooPattern::Unregister();
 		}
 
 		TEST_METHOD(GetString)
 		{
-			App::FooPattern::RegisterMethods();
+			App::FooPattern::Register();
 			Assert::AreEqual(12ull, Microsoft::UIA::TestOnly_RemoteOperationCount());
 
 			auto fooPatternInstance = winrt::make<App::FooPattern>();
@@ -292,13 +292,13 @@ namespace CuspTest
 
 			Assert::AreEqual(L"pool noodle", winrt::unbox_value<winrt::hstring>(context.GetOperand(1)).c_str());
 
-			App::FooPattern::UnregisterMethods();
+			App::FooPattern::Unregister();
 			Assert::AreEqual(0ull, Microsoft::UIA::TestOnly_RemoteOperationCount());
 		}
 
 		TEST_METHOD(SetString)
 		{
-			App::FooPattern::RegisterMethods();
+			App::FooPattern::Register();
 
 			auto fooPatternInstance = winrt::make<App::FooPattern>();
 
@@ -319,12 +319,12 @@ namespace CuspTest
 			Assert::AreEqual(1ull, setStringArguments.size());
 			Assert::AreEqual(L"string cheese", setStringArguments[0].c_str());
 
-			App::FooPattern::UnregisterMethods();
+			App::FooPattern::Unregister();
 		}
 
 		TEST_METHOD(ClearString)
 		{
-			App::FooPattern::RegisterMethods();
+			App::FooPattern::Register();
 
 			auto fooPatternInstance = winrt::make<App::FooPattern>();
 
@@ -338,7 +338,7 @@ namespace CuspTest
 
 			Assert::AreEqual(1, clearStringCallCount);
 
-			App::FooPattern::UnregisterMethods();
+			App::FooPattern::Unregister();
 		}
 
 	private:
@@ -363,7 +363,7 @@ namespace CuspTest
 			std::vector<GUID> guids;
 			TestRegistrar::OnRegister = TestRegistrar::OnUnregister = [&guids](const GUID& guid) { guids.push_back(guid); };
 
-			App::BarPattern::RegisterMethods<TestRegistrar>();
+			App::BarPattern::Register<TestRegistrar>();
 
 			Assert::AreEqual(3ull, guids.size());
 			Assert::AreEqual(setBoolIntGuid, guids[0]);
@@ -372,7 +372,7 @@ namespace CuspTest
 
 			guids.clear();
 
-			App::BarPattern::UnregisterMethods<TestRegistrar>();
+			App::BarPattern::Unregister<TestRegistrar>();
 
 			Assert::AreEqual(3ull, guids.size());
 			Assert::AreEqual(setBoolIntGuid, guids[0]);
@@ -382,7 +382,7 @@ namespace CuspTest
 
 		TEST_METHOD(SetBoolInt)
 		{
-			App::BarPattern::RegisterMethods();
+			App::BarPattern::Register();
 
 			auto barPatternInstance = winrt::make<App::BarPattern>();
 
@@ -404,7 +404,7 @@ namespace CuspTest
 			Assert::IsTrue(setBoolIntArguments[0].first);
 			Assert::AreEqual(23, setBoolIntArguments[0].second);
 
-			App::BarPattern::UnregisterMethods();
+			App::BarPattern::Unregister();
 		}
 
 	private:
