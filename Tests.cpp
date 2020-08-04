@@ -271,7 +271,7 @@ namespace CuspTest
 		TEST_METHOD(GetString)
 		{
 			App::FooPattern::RegisterMethods();
-			Assert::AreEqual(11ull, Microsoft::UIA::TestOnly_RemoteOperationCount());
+			Assert::AreEqual(12ull, Microsoft::UIA::TestOnly_RemoteOperationCount());
 
 			auto fooPatternInstance = winrt::make<App::FooPattern>();
 

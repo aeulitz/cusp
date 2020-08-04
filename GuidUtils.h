@@ -5,6 +5,26 @@
 
 #include <string>
 
+template<>
+struct std::hash<GUID>
+{
+	size_t operator()(GUID guid) const
+	{
+		// typedef struct _GUID {
+		// 	unsigned long  Data1;
+		// 	unsigned short Data2;
+		// 	unsigned short Data3;
+		// 	unsigned char  Data4[8];
+		// } GUID;
+
+		return
+			guid.Data1 ^
+			((guid.Data2 << 16) | guid.Data3) ^
+			*reinterpret_cast<uint32_t*>(guid.Data4) ^
+			*reinterpret_cast<uint32_t*>(guid.Data4 + 4);
+	}
+};
+
 namespace
 {
 	// helper array to convert a hexadecimal ASCII character into an unsigned char value

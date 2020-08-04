@@ -4,7 +4,7 @@
 
 namespace App
 {
-	struct FooPattern : public CustomPatternBase<FooPattern>
+	CUSTOM_PATTERN(FooPattern, "2bd720b1-c433-4292-8314-d4ccb8b7fae7")
 	{
 		CUSTOM_PATTERN_METHOD(0, SetBool, "25fb1199-db6f-4349-86aa-436d376a6843")
 		void SetBool(bool val)

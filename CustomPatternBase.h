@@ -5,7 +5,13 @@
 
 #include <winrt/Windows.Foundation.h>
 
-using namespace winrt::Windows::Foundation;
+#define CUSTOM_PATTERN(PATTERN, PATTERNGUID)                                                       \
+	struct PATTERN;                                                                                \
+	template<> struct GuidHolder<PATTERN>                                                          \
+	{                                                                                              \
+		static constexpr GUID value = Guid::StringToGuid(PATTERNGUID);                             \
+	};                                                                                             \
+	struct PATTERN : public CustomPatternBase<PATTERN>                                             \
 
 #define CUSTOM_PATTERN_METHOD(N, METHODNAME, GUID)                                                       \
 	template<class TPattern, class TRegistrar>                                                           \
@@ -20,6 +26,8 @@ using namespace winrt::Windows::Foundation;
 		TRegistrar::Unregister(Guid::StringToGuid(GUID));                                                \
 		if constexpr (n > 0) UnregisterMethod<TRegistrar>(std::integral_constant<int, n - 1>{});         \
 	}                                                                                                    \
+
+using namespace winrt::Windows::Foundation;
 
 template<class TPattern, class TRegistrar>
 struct RegisterMethodCount
@@ -121,6 +129,8 @@ struct MethodInvoker
 	}
 };
 
+template<class TPattern> struct GuidHolder {};
+
 template<class TPattern>
 struct CustomPatternBase : public winrt::implements<TPattern, IInspectable>
 {
@@ -144,19 +154,43 @@ struct CustomPatternBase : public winrt::implements<TPattern, IInspectable>
 		}
 	};
 
+	CustomPatternBase(/* IInspectable element */)
+	{
+		// this->get_weak()
+	}
+
 	template<class TRegistrar = MethodRegistrar>
 	static constexpr void RegisterMethods()
 	{
-		std::integral_constant<int, RegisterMethodCount<TPattern, TRegistrar>::Get() - 1> n;
+		Microsoft::UIA::AddRemoteOperationExtension(
+			GuidHolder<TPattern>::value,
+			1,
+			[](Microsoft::UIA::RemoteOperationContext& context, const std::vector<Microsoft::UIA::OperandId>& operandIds)
+			{
+				auto element = context.GetOperand(operandIds[0]);
+				auto it = elementToInstanceMap.find(element);
+				if (it != elementToInstanceMap.end())
+				{
+					// return the pattern instance
+					context.SetOperand(operandIds[1], it->second);
+				}
+			});
 
+
+		std::integral_constant<int, RegisterMethodCount<TPattern, TRegistrar>::Get() - 1> n;
 		TPattern::template RegisterMethod<TPattern, TRegistrar>(n);
 	}
 
 	template<class TRegistrar = MethodRegistrar>
 	static constexpr void UnregisterMethods()
 	{
+		Microsoft::UIA::RemoveRemoteOperationExtension(GuidHolder<TPattern>::value);
 		std::integral_constant<int, RegisterMethodCount<TPattern, TRegistrar>::Get() - 1> n;
-
 		TPattern::template UnregisterMethod<TRegistrar>(n);
 	}
+
+	static std::unordered_map</* element */ IInspectable, /* patternInstance */ IInspectable> elementToInstanceMap;
 };
+
+template <class TPattern>
+std::unordered_map</* element */ IInspectable, /* patternInstance */ IInspectable> CustomPatternBase<TPattern>::elementToInstanceMap;
