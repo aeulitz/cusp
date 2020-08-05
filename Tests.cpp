@@ -1,4 +1,5 @@
 #include "BarPattern.h"
+#include "DummyElement.h"
 #include "FooPattern.h"
 
 #include <CppUnitTest.h>
@@ -75,7 +76,8 @@ namespace CuspTest
 		{
 			App::FooPattern::Register();
 
-			auto fooPatternInstance = winrt::make<App::FooPattern>();
+			auto element = winrt::make<DummyElement>();
+			auto fooPatternInstance = winrt::make<App::FooPattern>(element);
 
 			int getBoolCallCount = 0;
 			fooPatternInstance.as<App::FooPattern>()->OnGetBool = [&getBoolCallCount]()
@@ -99,7 +101,8 @@ namespace CuspTest
 		{
 			App::FooPattern::Register();
 
-			auto fooPatternInstance = winrt::make<App::FooPattern>();
+			auto element = winrt::make<DummyElement>();
+			auto fooPatternInstance = winrt::make<App::FooPattern>(element);
 
 			std::vector<bool> setBoolArguments;
 			fooPatternInstance.as<App::FooPattern>()->OnSetBool =
@@ -123,7 +126,8 @@ namespace CuspTest
 		{
 			App::FooPattern::Register();
 
-			auto fooPatternInstance = winrt::make<App::FooPattern>();
+			auto element = winrt::make<DummyElement>();
+			auto fooPatternInstance = winrt::make<App::FooPattern>(element);
 
 			int getIntCallCount = 0;
 			fooPatternInstance.as<App::FooPattern>()->OnGetInt =
@@ -149,7 +153,8 @@ namespace CuspTest
 		{
 			App::FooPattern::Register();
 
-			auto fooPatternInstance = winrt::make<App::FooPattern>();
+			auto element = winrt::make<DummyElement>();
+			auto fooPatternInstance = winrt::make<App::FooPattern>(element);
 
 			std::vector<int> setIntArguments;
 			fooPatternInstance.as<App::FooPattern>()->OnSetInt =
@@ -175,7 +180,8 @@ namespace CuspTest
 		{
 			App::FooPattern::Register();
 
-			auto fooPatternInstance = winrt::make<App::FooPattern>();
+			auto element = winrt::make<DummyElement>();
+			auto fooPatternInstance = winrt::make<App::FooPattern>(element);
 
 			int getFloatCallCount = 0;
 			fooPatternInstance.as<App::FooPattern>()->OnGetFloat =
@@ -200,7 +206,8 @@ namespace CuspTest
 		{
 			App::FooPattern::Register();
 
-			auto fooPatternInstance = winrt::make<App::FooPattern>();
+			auto element = winrt::make<DummyElement>();
+			auto fooPatternInstance = winrt::make<App::FooPattern>(element);
 
 			std::vector<float> setFloatArguments;
 			fooPatternInstance.as<App::FooPattern>()->OnSetFloat = [&setFloatArguments](float val) { setFloatArguments.push_back(val); };
@@ -221,7 +228,8 @@ namespace CuspTest
 		{
 			App::FooPattern::Register();
 
-			auto fooPatternInstance = winrt::make<App::FooPattern>();
+			auto element = winrt::make<DummyElement>();
+			auto fooPatternInstance = winrt::make<App::FooPattern>(element);
 
 			int getDoubleCallCount = 0;
 			fooPatternInstance.as<App::FooPattern>()->OnGetDouble =
@@ -246,7 +254,8 @@ namespace CuspTest
 		{
 			App::FooPattern::Register();
 
-			auto fooPatternInstance = winrt::make<App::FooPattern>();
+			auto element = winrt::make<DummyElement>();
+			auto fooPatternInstance = winrt::make<App::FooPattern>(element);
 
 			std::vector<double> setDoubleArguments;
 			fooPatternInstance.as<App::FooPattern>()->OnSetDouble =
@@ -273,7 +282,8 @@ namespace CuspTest
 			App::FooPattern::Register();
 			Assert::AreEqual(12ull, Microsoft::UIA::TestOnly_RemoteOperationCount());
 
-			auto fooPatternInstance = winrt::make<App::FooPattern>();
+			auto element = winrt::make<DummyElement>();
+			auto fooPatternInstance = winrt::make<App::FooPattern>(element);
 
 			int getStringCallCount = 0;
 			fooPatternInstance.as<App::FooPattern>()->OnGetString =
@@ -300,7 +310,8 @@ namespace CuspTest
 		{
 			App::FooPattern::Register();
 
-			auto fooPatternInstance = winrt::make<App::FooPattern>();
+			auto element = winrt::make<DummyElement>();
+			auto fooPatternInstance = winrt::make<App::FooPattern>(element);
 
 			std::vector<std::wstring> setStringArguments;
 			fooPatternInstance.as<App::FooPattern>()->OnSetString =
@@ -326,7 +337,8 @@ namespace CuspTest
 		{
 			App::FooPattern::Register();
 
-			auto fooPatternInstance = winrt::make<App::FooPattern>();
+			auto element = winrt::make<DummyElement>();
+			auto fooPatternInstance = winrt::make<App::FooPattern>(element);
 
 			int clearStringCallCount = 0;
 			fooPatternInstance.as<App::FooPattern>()->OnClearString = [&clearStringCallCount]() { ++clearStringCallCount; };
@@ -337,6 +349,31 @@ namespace CuspTest
 			Microsoft::UIA::CallRemoteOperationExtension(clearStringGuid, context, { 0 });
 
 			Assert::AreEqual(1, clearStringCallCount);
+
+			App::FooPattern::Unregister();
+		}
+
+		TEST_METHOD(MultipleInstances)
+		{
+			App::FooPattern::Register();
+
+			auto element1 = winrt::make<DummyElement>();
+			auto fooPattern1 = winrt::make<App::FooPattern>(element1);
+			int setBoolCallCount1 = 0;
+			fooPattern1.as<App::FooPattern>()->OnSetBool = [&setBoolCallCount1](bool) { ++setBoolCallCount1; };
+
+			auto element2 = winrt::make<DummyElement>();
+			auto fooPattern2 = winrt::make<App::FooPattern>(element2);
+			int setBoolCallCount2 = 0;
+			fooPattern2.as<App::FooPattern>()->OnSetBool = [&setBoolCallCount2](bool) { ++setBoolCallCount2; };
+
+			Microsoft::UIA::RemoteOperationContext context;
+			context.SetOperand(0, fooPattern1);
+			context.SetOperand(1, winrt::box_value(true));
+			Microsoft::UIA::CallRemoteOperationExtension(setBoolGuid, context, { 0, 1 });
+
+			Assert::AreEqual(1, setBoolCallCount1);
+			Assert::AreEqual(0, setBoolCallCount2);
 
 			App::FooPattern::Unregister();
 		}
@@ -384,7 +421,8 @@ namespace CuspTest
 		{
 			App::BarPattern::Register();
 
-			auto barPatternInstance = winrt::make<App::BarPattern>();
+			auto element = winrt::make<DummyElement>();
+			auto barPatternInstance = winrt::make<App::BarPattern>(element);
 
 			std::vector<std::pair<bool, int>> setBoolIntArguments;
 			barPatternInstance.as<App::BarPattern>()->OnSetBoolInt =

@@ -5,6 +5,9 @@
 
 #include <winrt/Windows.Foundation.h>
 
+#include <mutex>
+#include <stack>
+
 #define CUSTOM_PATTERN(PATTERN, PATTERNGUID)                                                       \
 	struct PATTERN;                                                                                \
 	template<> struct GuidHolder<PATTERN>                                                          \
@@ -154,9 +157,10 @@ struct CustomPatternBase : public winrt::implements<TPattern, IInspectable>
 		}
 	};
 
-	CustomPatternBase(/* IInspectable element */)
+	CustomPatternBase(IInspectable element)
 	{
-		// this->get_weak()
+		std::lock_guard elementPatternPairsLock{ elementPatternPairsMutex };
+		elementPatternPairs.emplace_back(element, *this);
 	}
 
 	template<class TRegistrar = MethodRegistrar>
@@ -168,14 +172,9 @@ struct CustomPatternBase : public winrt::implements<TPattern, IInspectable>
 			[](Microsoft::UIA::RemoteOperationContext& context, const std::vector<Microsoft::UIA::OperandId>& operandIds)
 			{
 				auto element = context.GetOperand(operandIds[0]);
-				auto it = elementToInstanceMap.find(element);
-				if (it != elementToInstanceMap.end())
-				{
-					// return the pattern instance
-					context.SetOperand(operandIds[1], it->second);
-				}
+				IInspectable pattern = FindPattern(element);
+				if (pattern) context.SetOperand(operandIds[1], pattern);
 			});
-
 
 		std::integral_constant<int, RegisterMethodCount<TPattern, TRegistrar>::Get() - 1> n;
 		TPattern::template RegisterMethod<TPattern, TRegistrar>(n);
@@ -189,8 +188,54 @@ struct CustomPatternBase : public winrt::implements<TPattern, IInspectable>
 		TPattern::template UnregisterMethod<TRegistrar>(n);
 	}
 
-	static std::unordered_map</* element */ IInspectable, /* patternInstance */ IInspectable> elementToInstanceMap;
+	static IInspectable FindPattern(IInspectable element)
+	{
+		IInspectable pattern{ nullptr };
+		std::stack<int> deadPairs;
+
+		std::lock_guard elementPatternPairsLock{ elementPatternPairsMutex };
+
+		for (int i = 0; i < elementPatternPairs.size(); ++i)
+		{
+			IInspectable currentElement = elementPatternPairs[i].first.get();
+			if (currentElement)
+			{
+				if (currentElement == element)
+				{
+					IInspectable currentPattern = elementPatternPairs[i].second.get();
+					if (currentPattern)
+					{
+						pattern = currentPattern;
+					}
+					else
+					{
+						deadPairs.push(i);
+					}
+				}
+			}
+			else
+			{
+				deadPairs.push(i);
+			}
+		}
+
+		for (; !deadPairs.empty(); deadPairs.pop())
+		{
+			elementPatternPairs.erase(elementPatternPairs.cbegin() + deadPairs.top());
+		}
+
+		return pattern;
+	}
+
+	static std::mutex elementPatternPairsMutex;
+	using ElementPatternPairsType = std::vector<std::pair<winrt::weak_ref<IInspectable>, winrt::weak_ref<IInspectable>>>;
+	static ElementPatternPairsType elementPatternPairs;
 };
 
+template<class TPattern>
+std::mutex CustomPatternBase<TPattern>::elementPatternPairsMutex;
+
 template <class TPattern>
-std::unordered_map</* element */ IInspectable, /* patternInstance */ IInspectable> CustomPatternBase<TPattern>::elementToInstanceMap;
+std::vector<std::pair<
+	/* element */ winrt::weak_ref<IInspectable>,
+	/* pattern */ winrt::weak_ref<IInspectable>>> CustomPatternBase<TPattern>::elementPatternPairs;

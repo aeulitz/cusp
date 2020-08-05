@@ -172,6 +172,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BarPattern.h" />
+    <ClInclude Include="DummyElement.h" />
     <ClInclude Include="FooPattern.h" />
     <ClInclude Include="CustomPatternBase.h" />
     <ClInclude Include="GuidUtils.h" />

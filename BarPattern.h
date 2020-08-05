@@ -6,6 +6,8 @@ namespace App
 {
 	CUSTOM_PATTERN(BarPattern, "500b9f32-17ee-4540-b9df-6dda4f8e833d")
 	{
+		BarPattern(IInspectable element) : CustomPatternBase(element) {}
+
 		CUSTOM_PATTERN_METHOD(0, GetBool, "bd11eb15-2696-4e92-a350-872a4276e447")
 		bool GetBool()
 		{

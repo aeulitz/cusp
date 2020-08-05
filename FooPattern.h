@@ -6,6 +6,8 @@ namespace App
 {
 	CUSTOM_PATTERN(FooPattern, "2bd720b1-c433-4292-8314-d4ccb8b7fae7")
 	{
+		FooPattern(IInspectable element) : CustomPatternBase(element){}
+
 		CUSTOM_PATTERN_METHOD(0, SetBool, "25fb1199-db6f-4349-86aa-436d376a6843")
 		void SetBool(bool val)
 		{
