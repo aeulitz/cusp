@@ -77,22 +77,33 @@ namespace CuspTest
 			App::FooPattern::Register();
 
 			auto element = winrt::make<DummyElement>();
-			auto fooPatternInstance = winrt::make<App::FooPattern>(element);
+			auto fooPatternProvider = winrt::make<App::FooPattern>(element);
 
 			int getBoolCallCount = 0;
-			fooPatternInstance.as<App::FooPattern>()->OnGetBool = [&getBoolCallCount]()
+			fooPatternProvider.as<App::FooPattern>()->OnGetBool = [&getBoolCallCount]()
 			{
 				++getBoolCallCount;
 				return true;
 			};
 
-			Microsoft::UIA::RemoteOperationContext context;
-			context.SetOperand(0, fooPatternInstance);
+			{
+				// client actions
 
-			Microsoft::UIA::CallRemoteOperationExtension(getBoolGuid, context, { 0, 1 });
+				Microsoft::UIA::RemoteOperationContext context;
+
+				// retrieve pattern
+				context.SetOperand(0, element);
+				Microsoft::UIA::CallRemoteOperationExtension(foo_Guid, context, { 0, 1 });
+				auto fooPatternClient = context.GetOperand(1);
+
+				// call pattern method
+				context.SetOperand(0, fooPatternClient);
+				Microsoft::UIA::CallRemoteOperationExtension(getBoolGuid, context, { 0, 1 });
+
+				Assert::IsTrue(winrt::unbox_value<bool>(context.GetOperand(1)));
+			}
 
 			Assert::AreEqual(1, getBoolCallCount);
-			Assert::IsTrue(winrt::unbox_value<bool>(context.GetOperand(1)));
 
 			App::FooPattern::Unregister();
 		}
@@ -102,20 +113,31 @@ namespace CuspTest
 			App::FooPattern::Register();
 
 			auto element = winrt::make<DummyElement>();
-			auto fooPatternInstance = winrt::make<App::FooPattern>(element);
+			auto fooPatternProvider = winrt::make<App::FooPattern>(element);
 
 			std::vector<bool> setBoolArguments;
-			fooPatternInstance.as<App::FooPattern>()->OnSetBool =
+			fooPatternProvider.as<App::FooPattern>()->OnSetBool =
 				[&setBoolArguments](bool val)
 			{
 				setBoolArguments.push_back(val);
 			};
 
-			Microsoft::UIA::RemoteOperationContext context;
-			context.SetOperand(0, fooPatternInstance);
-			context.SetOperand(1, winrt::box_value(true));
+			{
+				// client actions
 
-			Microsoft::UIA::CallRemoteOperationExtension(setBoolGuid, context, { 0, 1 });
+				Microsoft::UIA::RemoteOperationContext context;
+
+				// retrieve pattern
+				context.SetOperand(0, element);
+				Microsoft::UIA::CallRemoteOperationExtension(foo_Guid, context, { 0, 1 });
+				auto fooPatternClient = context.GetOperand(1);
+
+				// call pattern method
+				context.SetOperand(0, fooPatternClient);
+				context.SetOperand(1, winrt::box_value(true));
+
+				Microsoft::UIA::CallRemoteOperationExtension(setBoolGuid, context, { 0, 1 });
+			}
 
 			Assert::AreEqual(1ull, setBoolArguments.size());
 
@@ -127,25 +149,34 @@ namespace CuspTest
 			App::FooPattern::Register();
 
 			auto element = winrt::make<DummyElement>();
-			auto fooPatternInstance = winrt::make<App::FooPattern>(element);
+			auto fooPatternProvider = winrt::make<App::FooPattern>(element);
 
 			int getIntCallCount = 0;
-			fooPatternInstance.as<App::FooPattern>()->OnGetInt =
+			fooPatternProvider.as<App::FooPattern>()->OnGetInt =
 				[&getIntCallCount]()
 				{
 					++getIntCallCount;
 					return 23;
 				};
 
-			Microsoft::UIA::RemoteOperationContext context;
-			context.SetOperand(0, fooPatternInstance);
+			{
+				// client actions
 
-			Microsoft::UIA::CallRemoteOperationExtension(getIntGuid, context, { 0, 1 });
+				Microsoft::UIA::RemoteOperationContext context;
+
+				// retrieve pattern
+				context.SetOperand(0, element);
+				Microsoft::UIA::CallRemoteOperationExtension(foo_Guid, context, { 0, 1 });
+				auto fooPatternClient = context.GetOperand(1);
+
+				// call pattern method
+				context.SetOperand(0, fooPatternClient);
+				Microsoft::UIA::CallRemoteOperationExtension(getIntGuid, context, { 0, 1 });
+
+				Assert::AreEqual(23, winrt::unbox_value<int>(context.GetOperand(1)));
+			}
 
 			Assert::AreEqual(1, getIntCallCount);
-
-			Assert::AreEqual(23, winrt::unbox_value<int>(context.GetOperand(1)));
-
 			App::FooPattern::Unregister();
 		}
 
@@ -154,21 +185,31 @@ namespace CuspTest
 			App::FooPattern::Register();
 
 			auto element = winrt::make<DummyElement>();
-			auto fooPatternInstance = winrt::make<App::FooPattern>(element);
+			auto fooPatternProvider = winrt::make<App::FooPattern>(element);
 
 			std::vector<int> setIntArguments;
-			fooPatternInstance.as<App::FooPattern>()->OnSetInt =
+			fooPatternProvider.as<App::FooPattern>()->OnSetInt =
 				[&setIntArguments]
 				(int val)
 				{
 					setIntArguments.push_back(val);
 				};
 
-			Microsoft::UIA::RemoteOperationContext context;
-			context.SetOperand(0, fooPatternInstance);
-			context.SetOperand(1, winrt::box_value(23));
+			{
+				// client actions
 
-			Microsoft::UIA::CallRemoteOperationExtension(setIntGuid, context, { 0, 1 });
+				Microsoft::UIA::RemoteOperationContext context;
+
+				// retrieve pattern
+				context.SetOperand(0, element);
+				Microsoft::UIA::CallRemoteOperationExtension(foo_Guid, context, { 0, 1 });
+				auto fooPatternClient = context.GetOperand(1);
+
+				// call pattern method
+				context.SetOperand(0, fooPatternClient);
+				context.SetOperand(1, winrt::box_value(23));
+				Microsoft::UIA::CallRemoteOperationExtension(setIntGuid, context, { 0, 1 });
+			}
 
 			Assert::AreEqual(1ull, setIntArguments.size());
 			Assert::AreEqual(23, setIntArguments[0]);
@@ -181,23 +222,33 @@ namespace CuspTest
 			App::FooPattern::Register();
 
 			auto element = winrt::make<DummyElement>();
-			auto fooPatternInstance = winrt::make<App::FooPattern>(element);
+			auto fooPatternProvider = winrt::make<App::FooPattern>(element);
 
 			int getFloatCallCount = 0;
-			fooPatternInstance.as<App::FooPattern>()->OnGetFloat =
+			fooPatternProvider.as<App::FooPattern>()->OnGetFloat =
 				[&getFloatCallCount]()
 				{
 					++getFloatCallCount;
 					return 1.234f;
 				};
 
-			Microsoft::UIA::RemoteOperationContext context;
-			context.SetOperand(0, fooPatternInstance);
+			{
+				// client actions
 
-			Microsoft::UIA::CallRemoteOperationExtension(getFloatGuid, context, { 0, 1 });
+				Microsoft::UIA::RemoteOperationContext context;
+
+				// retrieve pattern
+				context.SetOperand(0, element);
+				Microsoft::UIA::CallRemoteOperationExtension(foo_Guid, context, { 0, 1 });
+				auto fooPatternClient = context.GetOperand(1);
+
+				// call pattern method
+				context.SetOperand(0, fooPatternClient);
+				Microsoft::UIA::CallRemoteOperationExtension(getFloatGuid, context, { 0, 1 });
+				Assert::AreEqual(1.234f, winrt::unbox_value<float>(context.GetOperand(1)));
+			}
 
 			Assert::AreEqual(1, getFloatCallCount);
-			Assert::AreEqual(1.234f, winrt::unbox_value<float>(context.GetOperand(1)));
 
 			App::FooPattern::Unregister();
 		}
@@ -207,16 +258,26 @@ namespace CuspTest
 			App::FooPattern::Register();
 
 			auto element = winrt::make<DummyElement>();
-			auto fooPatternInstance = winrt::make<App::FooPattern>(element);
+			auto fooPatternProvider = winrt::make<App::FooPattern>(element);
 
 			std::vector<float> setFloatArguments;
-			fooPatternInstance.as<App::FooPattern>()->OnSetFloat = [&setFloatArguments](float val) { setFloatArguments.push_back(val); };
+			fooPatternProvider.as<App::FooPattern>()->OnSetFloat = [&setFloatArguments](float val) { setFloatArguments.push_back(val); };
 
-			Microsoft::UIA::RemoteOperationContext context;
-			context.SetOperand(0, fooPatternInstance);
-			context.SetOperand(1, winrt::box_value(1.234f));
+			{
+				// client actions
 
-			Microsoft::UIA::CallRemoteOperationExtension(setFloatGuid, context, { 0, 1 });
+				Microsoft::UIA::RemoteOperationContext context;
+
+				// retrieve pattern
+				context.SetOperand(0, element);
+				Microsoft::UIA::CallRemoteOperationExtension(foo_Guid, context, { 0, 1 });
+				auto fooPatternClient = context.GetOperand(1);
+
+				// call pattern method
+				context.SetOperand(0, fooPatternClient);
+				context.SetOperand(1, winrt::box_value(1.234f));
+				Microsoft::UIA::CallRemoteOperationExtension(setFloatGuid, context, { 0, 1 });
+			}
 
 			Assert::AreEqual(1ull, setFloatArguments.size());
 			Assert::AreEqual(1.234f, setFloatArguments[0]);
@@ -229,23 +290,33 @@ namespace CuspTest
 			App::FooPattern::Register();
 
 			auto element = winrt::make<DummyElement>();
-			auto fooPatternInstance = winrt::make<App::FooPattern>(element);
+			auto fooPatternProvider = winrt::make<App::FooPattern>(element);
 
 			int getDoubleCallCount = 0;
-			fooPatternInstance.as<App::FooPattern>()->OnGetDouble =
+			fooPatternProvider.as<App::FooPattern>()->OnGetDouble =
 				[&getDoubleCallCount]()
 				{
 					++getDoubleCallCount;
 					return 1.234;
 				};
 
-			Microsoft::UIA::RemoteOperationContext context;
-			context.SetOperand(0, fooPatternInstance);
+			{
+				// client actions
 
-			Microsoft::UIA::CallRemoteOperationExtension(getDoubleGuid, context, { 0, 1 });
+				Microsoft::UIA::RemoteOperationContext context;
+
+				// retrieve pattern
+				context.SetOperand(0, element);
+				Microsoft::UIA::CallRemoteOperationExtension(foo_Guid, context, { 0, 1 });
+				auto fooPatternClient = context.GetOperand(1);
+
+				// call pattern method
+				context.SetOperand(0, fooPatternClient);
+				Microsoft::UIA::CallRemoteOperationExtension(getDoubleGuid, context, { 0, 1 });
+				Assert::AreEqual(1.234, winrt::unbox_value<double>(context.GetOperand(1)));
+			}
 
 			Assert::AreEqual(1, getDoubleCallCount);
-			Assert::AreEqual(1.234, winrt::unbox_value<double>(context.GetOperand(1)));
 
 			App::FooPattern::Unregister();
 		}
@@ -255,21 +326,31 @@ namespace CuspTest
 			App::FooPattern::Register();
 
 			auto element = winrt::make<DummyElement>();
-			auto fooPatternInstance = winrt::make<App::FooPattern>(element);
+			auto fooPatternProvider = winrt::make<App::FooPattern>(element);
 
 			std::vector<double> setDoubleArguments;
-			fooPatternInstance.as<App::FooPattern>()->OnSetDouble =
+			fooPatternProvider.as<App::FooPattern>()->OnSetDouble =
 				[&setDoubleArguments]
 				(double val)
 				{
 					setDoubleArguments.push_back(val);
 				};
 
-			Microsoft::UIA::RemoteOperationContext context;
-			context.SetOperand(0, fooPatternInstance);
-			context.SetOperand(1, winrt::box_value(1.234));
+			{
+				// client actions
 
-			Microsoft::UIA::CallRemoteOperationExtension(setDoubleGuid, context, { 0, 1 });
+				Microsoft::UIA::RemoteOperationContext context;
+
+				// retrieve pattern
+				context.SetOperand(0, element);
+				Microsoft::UIA::CallRemoteOperationExtension(foo_Guid, context, { 0, 1 });
+				auto fooPatternClient = context.GetOperand(1);
+
+				// call pattern method
+				context.SetOperand(0, fooPatternClient);
+				context.SetOperand(1, winrt::box_value(1.234));
+				Microsoft::UIA::CallRemoteOperationExtension(setDoubleGuid, context, { 0, 1 });
+			}
 
 			Assert::AreEqual(1ull, setDoubleArguments.size());
 			Assert::AreEqual(1.234, setDoubleArguments[0]);
@@ -283,24 +364,33 @@ namespace CuspTest
 			Assert::AreEqual(12ull, Microsoft::UIA::TestOnly_RemoteOperationCount());
 
 			auto element = winrt::make<DummyElement>();
-			auto fooPatternInstance = winrt::make<App::FooPattern>(element);
+			auto fooPatternProvider = winrt::make<App::FooPattern>(element);
 
 			int getStringCallCount = 0;
-			fooPatternInstance.as<App::FooPattern>()->OnGetString =
+			fooPatternProvider.as<App::FooPattern>()->OnGetString =
 				[&getStringCallCount]()
 				{
 					++getStringCallCount;
 					return L"pool noodle";
 				};
 
-			Microsoft::UIA::RemoteOperationContext context;
-			context.SetOperand(0, fooPatternInstance);
+			{
+				// client actions
 
-			Microsoft::UIA::CallRemoteOperationExtension(getStringGuid, context, { 0, 1 });
+				Microsoft::UIA::RemoteOperationContext context;
+
+				// retrieve pattern
+				context.SetOperand(0, element);
+				Microsoft::UIA::CallRemoteOperationExtension(foo_Guid, context, { 0, 1 });
+				auto fooPatternClient = context.GetOperand(1);
+
+				// call pattern method
+				context.SetOperand(0, fooPatternClient);
+				Microsoft::UIA::CallRemoteOperationExtension(getStringGuid, context, { 0, 1 });
+				Assert::AreEqual(L"pool noodle", winrt::unbox_value<winrt::hstring>(context.GetOperand(1)).c_str());
+			}
 
 			Assert::AreEqual(1, getStringCallCount);
-
-			Assert::AreEqual(L"pool noodle", winrt::unbox_value<winrt::hstring>(context.GetOperand(1)).c_str());
 
 			App::FooPattern::Unregister();
 			Assert::AreEqual(0ull, Microsoft::UIA::TestOnly_RemoteOperationCount());
@@ -311,21 +401,31 @@ namespace CuspTest
 			App::FooPattern::Register();
 
 			auto element = winrt::make<DummyElement>();
-			auto fooPatternInstance = winrt::make<App::FooPattern>(element);
+			auto fooPatternProvider = winrt::make<App::FooPattern>(element);
 
 			std::vector<std::wstring> setStringArguments;
-			fooPatternInstance.as<App::FooPattern>()->OnSetString =
+			fooPatternProvider.as<App::FooPattern>()->OnSetString =
 				[&setStringArguments]
 				(const std::wstring& val)
 				{
 					setStringArguments.push_back(val);
 				};
 
-			Microsoft::UIA::RemoteOperationContext context;
-			context.SetOperand(0, fooPatternInstance);
-			context.SetOperand(1, winrt::box_value(L"string cheese"));
+			{
+				// client actions
 
-			Microsoft::UIA::CallRemoteOperationExtension(setStringGuid, context, { 0, 1 });
+				Microsoft::UIA::RemoteOperationContext context;
+
+				// retrieve pattern
+				context.SetOperand(0, element);
+				Microsoft::UIA::CallRemoteOperationExtension(foo_Guid, context, { 0, 1 });
+				auto fooPatternClient = context.GetOperand(1);
+
+				// call pattern method
+				context.SetOperand(0, fooPatternClient);
+				context.SetOperand(1, winrt::box_value(L"string cheese"));
+				Microsoft::UIA::CallRemoteOperationExtension(setStringGuid, context, { 0, 1 });
+			}
 
 			Assert::AreEqual(1ull, setStringArguments.size());
 			Assert::AreEqual(L"string cheese", setStringArguments[0].c_str());
@@ -338,15 +438,25 @@ namespace CuspTest
 			App::FooPattern::Register();
 
 			auto element = winrt::make<DummyElement>();
-			auto fooPatternInstance = winrt::make<App::FooPattern>(element);
+			auto fooPatternProvider = winrt::make<App::FooPattern>(element);
 
 			int clearStringCallCount = 0;
-			fooPatternInstance.as<App::FooPattern>()->OnClearString = [&clearStringCallCount]() { ++clearStringCallCount; };
+			fooPatternProvider.as<App::FooPattern>()->OnClearString = [&clearStringCallCount]() { ++clearStringCallCount; };
 
-			Microsoft::UIA::RemoteOperationContext context;
-			context.SetOperand(0, fooPatternInstance);
+			{
+				// client actions
 
-			Microsoft::UIA::CallRemoteOperationExtension(clearStringGuid, context, { 0 });
+				Microsoft::UIA::RemoteOperationContext context;
+
+				// retrieve pattern
+				context.SetOperand(0, element);
+				Microsoft::UIA::CallRemoteOperationExtension(foo_Guid, context, { 0, 1 });
+				auto fooPatternClient = context.GetOperand(1);
+
+				// call pattern method
+				context.SetOperand(0, fooPatternClient);
+				Microsoft::UIA::CallRemoteOperationExtension(clearStringGuid, context, { 0 });
+			}
 
 			Assert::AreEqual(1, clearStringCallCount);
 
@@ -358,19 +468,29 @@ namespace CuspTest
 			App::FooPattern::Register();
 
 			auto element1 = winrt::make<DummyElement>();
-			auto fooPattern1 = winrt::make<App::FooPattern>(element1);
+			auto fooPatternProvider1 = winrt::make<App::FooPattern>(element1);
 			int setBoolCallCount1 = 0;
-			fooPattern1.as<App::FooPattern>()->OnSetBool = [&setBoolCallCount1](bool) { ++setBoolCallCount1; };
+			fooPatternProvider1.as<App::FooPattern>()->OnSetBool = [&setBoolCallCount1](bool) { ++setBoolCallCount1; };
 
 			auto element2 = winrt::make<DummyElement>();
-			auto fooPattern2 = winrt::make<App::FooPattern>(element2);
+			auto fooPatternProvider2 = winrt::make<App::FooPattern>(element2);
 			int setBoolCallCount2 = 0;
-			fooPattern2.as<App::FooPattern>()->OnSetBool = [&setBoolCallCount2](bool) { ++setBoolCallCount2; };
+			fooPatternProvider2.as<App::FooPattern>()->OnSetBool = [&setBoolCallCount2](bool) { ++setBoolCallCount2; };
 
-			Microsoft::UIA::RemoteOperationContext context;
-			context.SetOperand(0, fooPattern1);
-			context.SetOperand(1, winrt::box_value(true));
-			Microsoft::UIA::CallRemoteOperationExtension(setBoolGuid, context, { 0, 1 });
+			{
+				// client actions
+
+				Microsoft::UIA::RemoteOperationContext context;
+
+				// retrieve pattern
+				context.SetOperand(0, element1);
+				Microsoft::UIA::CallRemoteOperationExtension(foo_Guid, context, { 0, 1 });
+				auto fooPatternClient1 = context.GetOperand(1);
+
+				context.SetOperand(0, fooPatternClient1);
+				context.SetOperand(1, winrt::box_value(true));
+				Microsoft::UIA::CallRemoteOperationExtension(setBoolGuid, context, { 0, 1 });
+			}
 
 			Assert::AreEqual(1, setBoolCallCount1);
 			Assert::AreEqual(0, setBoolCallCount2);
@@ -379,6 +499,7 @@ namespace CuspTest
 		}
 
 	private:
+		static inline GUID foo_Guid{ 0x2bd720b1, 0xc433, 0x4292, {0x83, 0x14, 0xd4, 0xcc, 0xb8, 0xb7, 0xfa, 0xe7} };
 		static inline GUID getBoolGuid{ 0xa9487d87, 0x8935, 0x49ad, {0x94, 0x73, 0xfa, 0xdc, 0xe0, 0xbf, 0xa9, 0x74} };
 		static inline GUID setBoolGuid{ 0x25fb1199, 0xdb6f, 0x4349, {0x86, 0xaa, 0x43, 0x6d, 0x37, 0x6a, 0x68, 0x43} };
 		static inline GUID getIntGuid{ 0x85e4d90e, 0xa804, 0x4a45, {0xa0, 0xe2, 0x3f, 0x57, 0x2f, 0x5c, 0xcf, 0xa9} };
@@ -446,6 +567,7 @@ namespace CuspTest
 		}
 
 	private:
+		static inline GUID bar_Guid{ 0x500b9f32, 0x17ee, 0x4540, {0xb9, 0xdf, 0x6d, 0xda, 0x4f, 0x8e, 0x83, 0x3d} };
 		static inline GUID getBoolGuid{ 0xbd11eb15, 0x2696, 0x4e92, {0xa3, 0x50, 0x87, 0x2a, 0x42, 0x76, 0xe4, 0x47} };
 		static inline GUID getIntGuid{ 0xb6801851, 0x50a9, 0x493d, {0x97, 0xf5, 0xcd, 0x95, 0x5f, 0x4b, 0xe0, 0x86} };
 		static inline GUID setBoolIntGuid{ 0xd8705c7f, 0x68b2, 0x435f, {0x86, 0xe3, 0x6a, 0x46, 0xa7, 0xd7, 0xf4, 0xac} };

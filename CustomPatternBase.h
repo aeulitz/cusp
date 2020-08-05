@@ -137,6 +137,8 @@ template<class TPattern> struct GuidHolder {};
 template<class TPattern>
 struct CustomPatternBase : public winrt::implements<TPattern, IInspectable>
 {
+	using Super = CustomPatternBase;
+
 	struct MethodRegistrar
 	{
 		template<class TMethodPointer>
@@ -157,10 +159,28 @@ struct CustomPatternBase : public winrt::implements<TPattern, IInspectable>
 		}
 	};
 
-	CustomPatternBase(IInspectable element)
+	CustomPatternBase(IInspectable element) : m_elementWeak{ element }
 	{
-		std::lock_guard elementPatternPairsLock{ elementPatternPairsMutex };
-		elementPatternPairs.emplace_back(element, *this);
+		std::lock_guard instancesLock{ instancesMutex };
+		instances.push_back(this->get_weak());
+	}
+
+	virtual ~CustomPatternBase()
+	{
+		std::stack<int> deadInstances;
+
+		std::lock_guard instancesLock{ instancesMutex };
+
+		for (int i = 0; i < instances.size(); ++i)
+		{
+			auto instance = instances[i].get();
+			if (!instance || instance == this->get_strong()) deadInstances.push(i);
+		}
+
+		for (;!deadInstances.empty(); deadInstances.pop())
+		{
+			instances.erase(instances.cbegin() + deadInstances.top());
+		}
 	}
 
 	template<class TRegistrar = MethodRegistrar>
@@ -191,51 +211,44 @@ struct CustomPatternBase : public winrt::implements<TPattern, IInspectable>
 	static IInspectable FindPattern(IInspectable element)
 	{
 		IInspectable pattern{ nullptr };
-		std::stack<int> deadPairs;
+		std::stack<int> deadInstances;
 
-		std::lock_guard elementPatternPairsLock{ elementPatternPairsMutex };
+		std::lock_guard instancesLock{ instancesMutex };
 
-		for (int i = 0; i < elementPatternPairs.size(); ++i)
+		for (int i = 0; i < instances.size(); ++i)
 		{
-			IInspectable currentElement = elementPatternPairs[i].first.get();
-			if (currentElement)
+			auto instance = instances[i].get();
+
+			if (instance)
 			{
-				if (currentElement == element)
+				auto instanceElement = instance->m_elementWeak.get();
+				if (instanceElement && instanceElement == element)
 				{
-					IInspectable currentPattern = elementPatternPairs[i].second.get();
-					if (currentPattern)
-					{
-						pattern = currentPattern;
-					}
-					else
-					{
-						deadPairs.push(i);
-					}
+					pattern = instance.as<IInspectable>();
 				}
 			}
 			else
 			{
-				deadPairs.push(i);
+				deadInstances.push(i);
 			}
 		}
 
-		for (; !deadPairs.empty(); deadPairs.pop())
+		for (; !deadInstances.empty(); deadInstances.pop())
 		{
-			elementPatternPairs.erase(elementPatternPairs.cbegin() + deadPairs.top());
+			instances.erase(instances.cbegin() + deadInstances.top());
 		}
 
 		return pattern;
 	}
 
-	static std::mutex elementPatternPairsMutex;
-	using ElementPatternPairsType = std::vector<std::pair<winrt::weak_ref<IInspectable>, winrt::weak_ref<IInspectable>>>;
-	static ElementPatternPairsType elementPatternPairs;
+	winrt::weak_ref<IInspectable> m_elementWeak;
+
+	static std::mutex instancesMutex;
+	static std::vector<winrt::weak_ref<TPattern>> instances;
 };
 
 template<class TPattern>
-std::mutex CustomPatternBase<TPattern>::elementPatternPairsMutex;
+std::mutex CustomPatternBase<TPattern>::instancesMutex;
 
-template <class TPattern>
-std::vector<std::pair<
-	/* element */ winrt::weak_ref<IInspectable>,
-	/* pattern */ winrt::weak_ref<IInspectable>>> CustomPatternBase<TPattern>::elementPatternPairs;
+template<class TPattern>
+std::vector<winrt::weak_ref<TPattern>> CustomPatternBase<TPattern>::instances;
