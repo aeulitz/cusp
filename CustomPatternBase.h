@@ -137,8 +137,7 @@ template<class TPattern> struct GuidHolder {};
 template<class TPattern>
 struct CustomPatternBase : public winrt::implements<TPattern, IInspectable>
 {
-	using Super = CustomPatternBase;
-
+private:
 	struct MethodRegistrar
 	{
 		template<class TMethodPointer>
@@ -158,6 +157,9 @@ struct CustomPatternBase : public winrt::implements<TPattern, IInspectable>
 			Microsoft::UIA::RemoveRemoteOperationExtension(guid);
 		}
 	};
+
+public:
+	using Super = CustomPatternBase;
 
 	CustomPatternBase(IInspectable element) : m_elementWeak{ element }
 	{
@@ -208,6 +210,10 @@ struct CustomPatternBase : public winrt::implements<TPattern, IInspectable>
 		TPattern::template UnregisterMethod<TRegistrar>(n);
 	}
 
+protected:
+	IInspectable Element() { return m_elementWeak.get(); }
+
+private:
 	static IInspectable FindPattern(IInspectable element)
 	{
 		IInspectable pattern{ nullptr };
